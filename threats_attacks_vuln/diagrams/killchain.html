@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attack Lifecycle — Kill Chain</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent3);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;}
+
+  .chain-container{display:flex;flex-direction:column;gap:3px;}
+  .phase{
+    display:flex;align-items:stretch;gap:0;cursor:pointer;transition:all .2s;
+  }
+  .phase-num{
+    width:36px;min-width:36px;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;color:var(--bg);flex-shrink:0;
+  }
+  .phase-body{
+    flex:1;padding:12px 16px;border:1px solid var(--border);border-left:none;
+    background:var(--surface);transition:all .2s;
+  }
+  .phase:hover .phase-body,.phase.active .phase-body{background:var(--surface2);}
+  .phase-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+  .phase-sub{font-size:10px;color:var(--muted);}
+  .phase-detail{
+    font-size:11px;line-height:1.7;color:var(--muted);
+    max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;
+  }
+  .phase.active .phase-detail{max-height:200px;padding-top:10px;}
+  .phase-detail strong{color:var(--text);}
+  .phase-detail em{color:var(--accent4);}
+
+  .connector{width:36px;text-align:center;color:var(--border);font-size:14px;line-height:1;padding:2px 0;}
+
+  .info-panel{margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent3);padding:14px 16px;font-size:11px;line-height:1.7;min-height:50px;}
+  .info-panel .ip-title{font-family:'Syne',sans-serif;font-size:12px;color:var(--accent3);font-weight:700;margin-bottom:6px;}
+  .info-panel .hint{color:var(--muted);font-size:10px;font-style:italic;}
+
+  .attack-map{margin-top:14px;}
+  .attack-map h3{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+  .attack-row{display:flex;gap:8px;margin-bottom:6px;align-items:flex-start;font-size:11px;flex-wrap:wrap;}
+  .attack-label{color:var(--accent4);min-width:120px;flex-shrink:0;font-weight:700;}
+  .attack-val{color:var(--muted);line-height:1.5;}
+</style>
+</head>
+<body>
+<h2>Attack Lifecycle — Cyber Kill Chain</h2>
+<p class="sub">// tap any phase to expand · shows attacker actions + defender mitigations per stage</p>
+
+<div class="chain-container" id="chain"></div>
+
+<div class="info-panel" id="info-panel">
+  <div class="hint">Tap a phase above to see attack techniques and mitigations →</div>
+</div>
+
+<div class="attack-map">
+  <h3>Common Attack → Kill Chain Phase Mapping</h3>
+  <div class="attack-row"><span class="attack-label">Phishing email</span><span class="attack-val">Delivery (Phase 4) — delivers the weaponized payload to the target</span></div>
+  <div class="attack-row"><span class="attack-label">Watering hole</span><span class="attack-val">Delivery (Phase 4) — compromised site delivers exploit when target visits</span></div>
+  <div class="attack-row"><span class="attack-label">Exploit / RCE</span><span class="attack-val">Exploitation (Phase 5) — vulnerability triggers, gives initial access</span></div>
+  <div class="attack-row"><span class="attack-label">Malware install</span><span class="attack-val">Installation (Phase 6) — backdoor/RAT establishes persistent access</span></div>
+  <div class="attack-row"><span class="attack-label">C2 beaconing</span><span class="attack-val">C2 (Phase 7) — attacker establishes command channel</span></div>
+  <div class="attack-row"><span class="attack-label">Lateral movement</span><span class="attack-val">Actions on Objectives (Phase 8) — pivot to reach target data/systems</span></div>
+  <div class="attack-row"><span class="attack-label">Ransomware encrypt</span><span class="attack-val">Actions on Objectives (Phase 8) — final goal execution</span></div>
+</div>
+
+<script>
+const phases = [
+  {
+    num:'1', color:'#7c6dfa', title:'Reconnaissance', sub:'OSINT · passive/active scanning · target research',
+    detail:'<strong>Attacker does:</strong> Researches the target via LinkedIn, job postings, WHOIS, Shodan, email harvesting, DNS enumeration, social media. <strong>Active:</strong> port scanning, banner grabbing. <em>Defender mitigations:</em> Minimize public info exposure, monitor for scanning activity, employee OPSEC training.',
+    panelText:'Reconnaissance is where the attack begins — before a single packet is sent to the target. Attackers use OSINT (Open Source Intelligence) to map the organization: employee names/roles (LinkedIn), technologies in use (job postings mention "Azure AD"), exposed services (Shodan), email formats, DNS records. This intelligence shapes the entire attack. Defenders can limit exposure by cleaning up public info, training employees on social media OPSEC, and monitoring for reconnaissance scans.'
+  },
+  {
+    num:'2', color:'#7c6dfa', title:'Weaponization', sub:'craft exploit · package malware · build payload',
+    detail:'<strong>Attacker does:</strong> Creates or acquires an exploit, packages it with a payload (Meterpreter, Cobalt Strike beacon, ransomware), creates the delivery vehicle (malicious Office doc, PDF, ISO). <em>Defender mitigations:</em> Threat intelligence to know current weaponization techniques. Most defenders have no visibility here.',
+    panelText:'Weaponization happens entirely within the attacker\'s infrastructure — the defender has no visibility. The attacker pairs an exploit (targeting a CVE or zero-day) with a payload (RAT, ransomware, backdoor). They package it into a delivery vehicle: a malicious Word macro, a PDF, a fake installer. Key defender insight: threat intel feeds can reveal WHAT attacker groups are weaponizing before they hit you, enabling proactive defenses.'
+  },
+  {
+    num:'3', color:'#ffd166', title:'Delivery', sub:'phishing · watering hole · USB drop · supply chain',
+    detail:'<strong>Attacker does:</strong> Sends phishing email, sets up watering hole, drops infected USB, compromises software update. This is where the attacker first interacts with the target environment. <em>Defender mitigations:</em> Email filtering/sandboxing, user training, web proxy filtering, USB controls, software supply chain verification.',
+    panelText:'Delivery is when the attacker first touches the target — and the first opportunity for defenders to stop the attack. Phishing is the most common: a malicious attachment or link delivered via email. Watering holes compromise sites the target trusts. Supply chain delivery (SolarWinds) is the hardest to detect because the delivery vector is a trusted software update. Key controls: email gateway with sandboxing, user security awareness training, EDR blocking malicious file execution.'
+  },
+  {
+    num:'4', color:'#ffd166', title:'Exploitation', sub:'CVE exploit · zero-day · macro execution · RCE',
+    detail:'<strong>Attacker does:</strong> Exploits vulnerability in software (browser, Office, OS, web app) or tricks user into executing code. Zero-day = no patch. Known CVE = patching would have stopped it here. <em>Defender mitigations:</em> Patch management, application sandboxing, ASLR/DEP, least-privilege user accounts, browser isolation.',
+    panelText:'Exploitation is where the vulnerability is triggered — the code runs. If the user opened the malicious Word document, the macro runs. If the server had an unpatched CVE, the exploit fires. This is why patch management is critical: most enterprise breaches exploit known vulnerabilities that had patches available. Defenders: keep systems patched, use application control (allowlisting), run users without admin rights (limits damage even if code runs).'
+  },
+  {
+    num:'5', color:'#ff6b6b', title:'Installation', sub:'RAT · backdoor · rootkit · persistence mechanism',
+    detail:'<strong>Attacker does:</strong> Installs persistent access — RAT, backdoor, rootkit. Creates scheduled tasks, modifies registry, adds startup entries, creates new admin accounts. Goal: survive reboots and maintain access. <em>Defender mitigations:</em> EDR behavioral detection, application allowlisting, integrity monitoring (FIM), alerting on new admin accounts.',
+    panelText:'Installation establishes persistence so the attacker doesn\'t lose access after a reboot or credential change. Common persistence mechanisms: Windows Registry Run keys, scheduled tasks, service installation, startup folder entries, WMI subscriptions. Defenders: EDR tools detect unusual process creation and persistence mechanisms. File Integrity Monitoring (FIM) alerts when critical system files are modified. Alert on any new privileged account creation.'
+  },
+  {
+    num:'6', color:'#ff6b6b', title:'Command & Control (C2)', sub:'beacon · encrypted channel · DNS tunnel · C2 framework',
+    detail:'<strong>Attacker does:</strong> Establishes encrypted communication channel (HTTPS, DNS, social media) to remotely control compromised system. Regular beaconing at set intervals. Issues commands, exfiltrates data, updates malware. <em>Defender mitigations:</em> Egress filtering, DNS monitoring for tunneling, proxy inspection of HTTPS, behavioral analysis of regular beacon patterns.',
+    panelText:'C2 (Command and Control) is the attacker\'s remote control channel. The malware "phones home" to the C2 server at a regular interval (beacon interval) to receive instructions. C2 channels often use HTTPS to blend with normal traffic, or DNS tunneling to bypass firewalls. Defenders watch for: regular beacon intervals, connections to unusual IPs/domains, large DNS queries (tunneling), HTTPS to unknown external IPs. This is where SIEM correlation of network logs pays off.'
+  },
+  {
+    num:'7', color:'#ff6b6b', title:'Actions on Objectives', sub:'exfiltration · lateral movement · ransomware · destruction',
+    detail:'<strong>Attacker does:</strong> Executes final goal — steal data, encrypt for ransom, destroy systems, pivot laterally to reach higher-value targets. Uses legitimate tools (LOLBins) to blend in. May be in network for weeks/months before this phase. <em>Defender mitigations:</em> DLP, network segmentation (limits lateral movement), honeypots, UEBA, offline backups (for ransomware).',
+    panelText:'Actions on Objectives is where the attacker achieves their goal — and where the damage occurs. For ransomware: encrypt everything reachable. For espionage: exfiltrate intellectual property, credentials, or PII. For sabotage: destroy systems or data. Attackers increasingly use "Living off the Land" (LOLBins) — abusing legitimate Windows tools like PowerShell, WMI, certutil — making detection harder. Defenders: network segmentation limits lateral movement (can\'t encrypt what you can\'t reach), DLP catches data exfiltration, offline backups survive ransomware.'
+  },
+];
+
+const chain = document.getElementById('chain');
+
+phases.forEach((p, i) => {
+  const div = document.createElement('div');
+  div.className = 'phase';
+  div.innerHTML = `
+    <div class="phase-num" style="background:${p.color};">${p.num}</div>
+    <div class="phase-body">
+      <div class="phase-title" style="color:${p.color};">${p.title}</div>
+      <div class="phase-sub">${p.sub}</div>
+      <div class="phase-detail">${p.detail}</div>
+    </div>`;
+
+  div.onclick = () => {
+    const wasActive = div.classList.contains('active');
+    document.querySelectorAll('.phase').forEach(el => el.classList.remove('active'));
+    if (!wasActive) {
+      div.classList.add('active');
+      const panel = document.getElementById('info-panel');
+      panel.innerHTML = `<div class="ip-title">Phase ${p.num}: ${p.title}</div><div>${p.panelText}</div>`;
+      panel.style.borderLeftColor = p.color;
+      panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  };
+
+  chain.appendChild(div);
+
+  if (i < phases.length - 1) {
+    const conn = document.createElement('div');
+    conn.style.cssText = 'padding-left:18px;color:#252a38;font-size:12px;';
+    conn.textContent = '↓';
+    chain.appendChild(conn);
+  }
+});
+</script>
+</body>
+</html>

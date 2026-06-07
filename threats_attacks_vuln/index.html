@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEC+ SY0-701 · Module 2 · Threats, Attacks & Vulnerabilities</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MODULE NAV STRIP -->
+  <div class="module-nav-strip">
+    <span class="mnav-label">Module:</span>
+    <a class="module-pill" href="../crypto_and_architecture/index.html">
+      <span class="mpill-num">01</span> Crypto & Architecture
+    </a>
+    <a class="module-pill current" href="../threats_attacks_vuln/index.html">
+      <span class="mpill-num">02</span> Threats, Attacks & Vuln
+    </a>
+    <span style="margin-left:auto;color:var(--muted);font-size:10px;">SY0-701 Study Lab</span>
+  </div>
+
+  <header>
+    <div class="badge">Module 02 · CompTIA Security+ SY0-701</div>
+    <h1>Threats, Attacks &<br><span>Vulnerabilities</span></h1>
+    <p>// social engineering · malware types · network attacks · application attacks · IoC recognition</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="showTab('threat-concepts',this)">Concepts</button>
+    <button class="tab-btn" onclick="showTab('threat-quiz',this)">Quiz</button>
+    <button class="tab-btn" onclick="showTab('diagrams',this)">Diagrams</button>
+    <button class="tab-btn" onclick="showTab('drag-drop',this)">Match-Up Lab</button>
+    <button class="tab-btn" onclick="showTab('flashcards',this)">Flashcards</button>
+    <button class="tab-btn" onclick="showTab('reference',this)">Quick Reference</button>
+  </nav>
+
+  <!-- CONCEPTS -->
+  <div class="section active" id="threat-concepts">
+    <div class="section-header">
+      <h2>Threats, Attacks & Vulnerabilities</h2>
+      <p>// click any card to reveal · covers social engineering, malware, network & app attacks, IoC</p>
+    </div>
+    <div class="callout red">
+      <strong>Core exam pattern:</strong> The exam gives a scenario describing an attack and asks you to identify it. Know the DEFINING characteristic of each: Phishing = email impersonation. Watering hole = compromised trusted site. Rootkit = hides at kernel level. C2 beaconing = regular interval outbound connections. Supply chain = trusted vendor compromised.
+    </div>
+    <div class="concept-grid" id="threat-grid"></div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="section" id="threat-quiz">
+    <div class="section-header">
+      <h2>Threats & Attacks Quiz</h2>
+      <p>// 8 random questions from a bank of 24 · new set each attempt · full per-choice explanations</p>
+    </div>
+    <div class="quiz-header">
+      <span class="quiz-counter" id="th-counter">Question 1 of 8</span>
+      <span class="quiz-score-live" id="th-score-live">Score: 0/0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="th-progress" style="width:0%"></div></div>
+    <div id="th-box"></div>
+  </div>
+
+  <!-- DIAGRAMS -->
+  <div class="section" id="diagrams">
+    <div class="section-header">
+      <h2>Interactive Diagrams</h2>
+      <p>// tap components for explanations</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cyber Kill Chain — Attack Lifecycle</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;">The 7 phases of an attack from reconnaissance to objective. Tap each phase to see what attackers do and how defenders can stop it at that stage.</p>
+      <div class="callout red"><strong>Exam relevance:</strong> The kill chain concept shows WHY defense in depth matters — stopping an attacker at any phase prevents the attack from progressing. Defenders don't need to stop every phase; stopping one is sufficient.</div>
+      <iframe class="diagram-frame" src="diagrams/killchain.html" title="Cyber Kill Chain" style="height:700px;"></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Attack Type Comparison — Tap to Compare</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;">The exam frequently presents scenarios where you must distinguish between similar attack types. Tap each card for the exam-critical differentiators.</p>
+      <div class="callout yellow"><strong>Key differentiators the exam loves:</strong> Phishing vs watering hole (email vs compromised site). Single vs double extortion ransomware. SQLi vs XSS (database vs browser). Virus vs worm (user action vs autonomous). Stored vs reflected XSS (persistent vs URL-based).</div>
+      <iframe class="diagram-frame" src="diagrams/attacktypes.html" title="Attack type comparison" style="height:640px;"></iframe>
+    </div>
+  </div>
+
+  <!-- DRAG & DROP -->
+  <div class="section" id="drag-drop">
+    <div class="section-header">
+      <h2>Match-Up Lab</h2>
+      <p>// drag each item to its correct category · shuffles on reset</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Round 1 · Attack Category Sorting</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">Sort each attack into its correct category.</p>
+      <div class="drag-area">
+        <div class="drag-col"><h4>Attacks to Sort</h4><div class="drag-items" id="dd-source-1"></div></div>
+        <div class="drag-col"><h4>Categories</h4>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:5px;">SOCIAL ENGINEERING</div><div class="drop-zone" id="dz-sym" data-cat="sym"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent3);margin-bottom:5px;">MALWARE</div><div class="drop-zone" id="dz-asym" data-cat="asym"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:5px;">NETWORK / APP ATTACK</div><div class="drop-zone" id="dz-hash" data-cat="hash"><div class="drop-zone-label">Drop here</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="check-btn" onclick="checkDragDrop1()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop1()">Shuffle & Reset</button>
+      <div class="feedback" id="dd1-feedback"></div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Round 2 · Attack Goal Matching</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">Match each scenario to the CIA triad dimension it primarily attacks.</p>
+      <div class="drag-area">
+        <div class="drag-col"><h4>Scenarios</h4><div class="drag-items" id="dd-source-2"></div></div>
+        <div class="drag-col"><h4>Primary Impact</h4>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:5px;">CONFIDENTIALITY</div><div class="drop-zone" id="dz-seg" data-cat="seg"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:5px;">INTEGRITY</div><div class="drop-zone" id="dz-hard" data-cat="hard"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent3);margin-bottom:5px;">AVAILABILITY</div><div class="drop-zone" id="dz-ac" data-cat="ac"><div class="drop-zone-label">Drop here</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="check-btn" onclick="checkDragDrop2()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop2()" style="margin-left:10px;">Shuffle & Reset</button>
+      <div class="feedback" id="dd2-feedback"></div>
+    </div>
+  </div>
+
+  <!-- FLASHCARDS -->
+  <div class="section" id="flashcards">
+    <div class="section-header"><h2>Flashcards</h2><p>// click to flip · arrows to navigate · shuffle anytime</p></div>
+    <div class="flashcard-wrap">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="card-face card-front"><div class="hint">Click to reveal answer</div><div class="q" id="fc-question"></div></div>
+        <div class="card-face card-back"><div class="a" id="fc-answer"></div></div>
+      </div>
+    </div>
+    <div class="card-nav">
+      <button onclick="prevCard()">&#8592;</button>
+      <div class="card-progress" id="fc-progress">1 / 18</div>
+      <button onclick="nextCard()">&#8594;</button>
+    </div>
+    <div style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      Filter:
+      <button class="fc-filter-btn active" id="filter-all" onclick="filterCards('all')">All</button>
+      <button class="fc-filter-btn" id="filter-se" onclick="filterCards('se')">Social Eng.</button>
+      <button class="fc-filter-btn" id="filter-malware" onclick="filterCards('malware')">Malware</button>
+      <button class="fc-filter-btn" id="filter-network" onclick="filterCards('network')">Network</button>
+      <button class="fc-filter-btn" id="filter-app" onclick="filterCards('app')">App Attacks</button>
+      <span style="margin-left:8px;">|</span>
+      <button class="fc-filter-btn" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div class="section" id="reference">
+    <div class="section-header"><h2>Quick Reference</h2><p>// cheat tables for exam day</p></div>
+
+    <div class="card">
+      <div class="card-title">Social Engineering Attack Types</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:18%"><col style="width:40%"><col style="width:42%"></colgroup>
+        <tr><th>Attack</th><th>How It Works</th><th>Key Differentiator</th></tr>
+        <tr><td>Phishing</td><td>Mass email impersonating trusted entity</td><td>Generic, mass — not targeted</td></tr>
+        <tr><td>Spear phishing</td><td>Targeted email using researched personal details</td><td>Personalized — specific named target</td></tr>
+        <tr><td>Whaling</td><td>Spear phishing targeting executives</td><td>CEO/CFO/Board — high-value target</td></tr>
+        <tr><td>Vishing</td><td>Voice/phone-based phishing</td><td>PHONE — not email</td></tr>
+        <tr><td>Smishing</td><td>SMS-based phishing with malicious link</td><td>TEXT MESSAGE — not email</td></tr>
+        <tr><td>BEC</td><td>Spoof/compromise exec email for wire fraud</td><td>Financial fraud, executive impersonation</td></tr>
+        <tr><td>Pretexting</td><td>Fabricate scenario to extract info</td><td>Made-up backstory/identity</td></tr>
+        <tr><td>Watering hole</td><td>Compromise trusted site frequented by targets</td><td>Attacks a third-party site, not victim directly</td></tr>
+        <tr><td>Typosquatting</td><td>Lookalike domain/package name for typos</td><td>paypa1.com vs paypal.com</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Malware Types</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:16%"><col style="width:42%"><col style="width:42%"></colgroup>
+        <tr><th>Type</th><th>Behavior</th><th>Defining Characteristic</th></tr>
+        <tr><td>Virus</td><td>Attaches to host file, spreads via user action</td><td>Requires HOST FILE + USER ACTION to spread</td></tr>
+        <tr><td>Worm</td><td>Self-replicates across network autonomously</td><td>NO user action needed — exploits vulnerabilities</td></tr>
+        <tr><td>Trojan</td><td>Disguised as legitimate software, hidden payload</td><td>Appears legitimate — user installs voluntarily</td></tr>
+        <tr><td>RAT</td><td>Remote access/control of infected system</td><td>Gives attacker INTERACTIVE remote control</td></tr>
+        <tr><td>Rootkit</td><td>Hides at OS/kernel level, intercepts sys calls</td><td>HIDES malware from AV/EDR at kernel level</td></tr>
+        <tr><td>Keylogger</td><td>Records keystrokes for credential theft</td><td>Captures credentials WITHOUT needing network access</td></tr>
+        <tr><td>Ransomware</td><td>Encrypts files, demands ransom</td><td>ENCRYPTION + extortion; double = also exfiltrates</td></tr>
+        <tr><td>Spyware</td><td>Silently collects user data</td><td>Surveillance — screen, mic, webcam, history</td></tr>
+        <tr><td>Botnet/C2</td><td>Network of compromised machines under attacker control</td><td>Used for DDoS, spam, credential stuffing</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Scenario Decision Guide — Threats</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:45%"><col style="width:55%"></colgroup>
+        <tr><th>Scenario says...</th><th>Answer</th></tr>
+        <tr><td>Targeted email, personalized details, specific individual</td><td>Spear phishing</td></tr>
+        <tr><td>Executive targeted specifically (CEO/CFO)</td><td>Whaling</td></tr>
+        <tr><td>Compromised a site the target group trusts</td><td>Watering hole attack</td></tr>
+        <tr><td>Executive email, urgent wire transfer, slight domain change</td><td>BEC (Business Email Compromise)</td></tr>
+        <tr><td>Files encrypted AND data stolen/threatened for publication</td><td>Double-extortion ransomware</td></tr>
+        <tr><td>Malware hides at kernel level, invisible to AV</td><td>Rootkit</td></tr>
+        <tr><td>Regular outbound HTTPS connections at fixed intervals</td><td>C2 beaconing</td></tr>
+        <tr><td>Data encoded in DNS queries to bypass firewall</td><td>DNS tunneling</td></tr>
+        <tr><td>Compromised software update trusted by target</td><td>Supply chain attack</td></tr>
+        <tr><td>SQL syntax injected into login form, bypasses auth</td><td>SQL injection → parameterized queries</td></tr>
+        <tr><td>Script injected into DB, executes for every page visitor</td><td>Stored XSS → output encoding + CSP</td></tr>
+        <tr><td>SYN packets sent, never completing TCP handshake</td><td>SYN flood DoS</td></tr>
+        <tr><td>Fake ARP replies redirect LAN traffic through attacker</td><td>ARP poisoning (MITM)</td></tr>
+        <tr><td>Unknown to vendor, no patch exists</td><td>Zero-day vulnerability</td></tr>
+        <tr><td>Accidental data breach — employee mistake</td><td>Negligent insider threat</td></tr>
+        <tr><td>Unusual login location/time, large data transfer detected</td><td>Behavioral IoC — UEBA alert</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Application Attack Mitigations</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:20%"><col style="width:40%"><col style="width:40%"></colgroup>
+        <tr><th>Attack</th><th>Root Cause</th><th>Primary Mitigation</th></tr>
+        <tr><td>SQL Injection</td><td>User input concatenated into SQL query</td><td>Parameterized queries (prepared statements)</td></tr>
+        <tr><td>XSS</td><td>User input rendered as HTML/JS without encoding</td><td>Output encoding + Content Security Policy (CSP)</td></tr>
+        <tr><td>Buffer Overflow</td><td>No bounds checking on input to memory buffer</td><td>ASLR + DEP/NX + stack canaries + safe functions</td></tr>
+        <tr><td>CSRF</td><td>Browser sends cookies automatically with requests</td><td>CSRF tokens + SameSite cookie attribute</td></tr>
+        <tr><td>Directory Traversal</td><td>Path input not validated, allows ../../etc/passwd</td><td>Input validation + deny path traversal patterns</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Module 02 of SEC+ SY0-701 Study Lab &nbsp;·&nbsp;
+    <a href="../crypto_and_architecture/index.html" style="color:var(--accent2);text-decoration:none;">← Back: Crypto & Architecture</a>
+  </footer>
+</div>
+
+<script src="js/threats.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/flashcards.js"></script>
+<script src="js/dragdrop.js"></script>
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function buildGrid(data, containerId) {
+  const container = document.getElementById(containerId);
+  data.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'concept-card';
+    card.innerHTML = `<div class="label">${item.label}</div><div class="term">${item.term}</div><div class="def">${item.def}</div><div class="tags">${(item.tags||[]).map(t=>`<span class="tag ${t}">${{conf:'Confidentiality',integ:'Integrity',auth:'Authentication',nonrep:'Non-repudiation',avail:'Availability'}[t]||t}</span>`).join('')}</div>`;
+    card.onclick=()=>card.classList.toggle('open');
+    container.appendChild(card);
+  });
+}
+
+// Module 2 drag-drop uses threat categories
+window.dd1Items = [
+  {text:'Spear phishing email',cat:'sym'},
+  {text:'Ransomware',cat:'asym'},
+  {text:'SQL injection',cat:'hash'},
+  {text:'Watering hole site',cat:'sym'},
+  {text:'Rootkit',cat:'asym'},
+  {text:'SYN flood',cat:'hash'},
+  {text:'Pretexting phone call',cat:'sym'},
+  {text:'Keylogger',cat:'asym'},
+  {text:'ARP poisoning',cat:'hash'},
+];
+
+window.dd2Items = [
+  {text:'Credential-stealing keylogger',cat:'seg'},
+  {text:'SQL injection dumps user table',cat:'seg'},
+  {text:'Attacker modifies firewall config',cat:'hard'},
+  {text:'Ransomware encrypts all files',cat:'ac'},
+  {text:'MITM alters transaction amount',cat:'hard'},
+  {text:'DDoS takes down web store',cat:'ac'},
+  {text:'Spyware captures PII',cat:'seg'},
+  {text:'Worm corrupts system files',cat:'hard'},
+];
+
+// Override check functions for module 2 labels
+window.checkDragDrop1 = function() {
+  let correct=0,total=window.dd1Items.length;
+  ['dz-sym','dz-asym','dz-hash'].forEach(dzId=>{
+    document.getElementById(dzId).querySelectorAll('.drag-item').forEach(el=>{
+      const ok=el.dataset.cat===document.getElementById(dzId).dataset.cat;
+      el.classList.add(ok?'correct':'wrong');
+      if(ok) correct++;
+    });
+  });
+  const fb=document.getElementById('dd1-feedback');
+  fb.className=`feedback show ${correct===total?'correct':'wrong'}`;
+  fb.innerHTML = correct===total
+    ? `✓ Perfect! All ${total} attacks correctly categorized.`
+    : `<strong>${correct}/${total} correct.</strong> Social Engineering: phishing, watering hole, pretexting. Malware: ransomware, rootkit, keylogger. Network/App: SQLi, SYN flood, ARP poisoning.`;
+};
+
+window.checkDragDrop2 = function() {
+  let correct=0,total=window.dd2Items.length;
+  ['dz-seg','dz-hard','dz-ac'].forEach(dzId=>{
+    document.getElementById(dzId).querySelectorAll('.drag-item').forEach(el=>{
+      const ok=el.dataset.cat===document.getElementById(dzId).dataset.cat;
+      el.classList.add(ok?'correct':'wrong');
+      if(ok) correct++;
+    });
+  });
+  const fb=document.getElementById('dd2-feedback');
+  fb.className=`feedback show ${correct===total?'correct':'wrong'}`;
+  fb.innerHTML = correct===total
+    ? `✓ Perfect! CIA triad impact correctly matched.`
+    : `<strong>${correct}/${total} correct.</strong> Confidentiality: steal/expose data. Integrity: modify/corrupt data. Availability: prevent access (DoS, ransomware).`;
+};
+
+buildGrid(window.threatConcepts,'threat-grid');
+initQuiz('threats');
+renderFC();
+</script>
+</body>
+</html>

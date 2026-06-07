@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attack Type Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent4);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:16px;}
+
+  /* Cards grid */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+  .atk-card{
+    background:var(--surface);border:1px solid var(--border);border-top:3px solid;
+    padding:14px;cursor:pointer;transition:all .2s;
+  }
+  .atk-card:hover,.atk-card.active{background:var(--surface2);}
+  .atk-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+  .atk-tag{font-size:9px;letter-spacing:1px;text-transform:uppercase;opacity:.7;margin-bottom:8px;}
+  .atk-oneliner{font-size:10px;color:var(--muted);line-height:1.5;}
+
+  .info-panel{margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent4);padding:14px 16px;font-size:11px;line-height:1.7;min-height:60px;}
+  .info-panel .ip-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:6px;}
+  .info-panel .hint{color:var(--muted);font-size:10px;font-style:italic;}
+  .info-panel table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10px;}
+  .info-panel th{color:var(--accent);text-align:left;padding:4px 8px;border-bottom:1px solid var(--border);letter-spacing:1px;font-size:9px;text-transform:uppercase;}
+  .info-panel td{padding:4px 8px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top;}
+  .info-panel td:first-child{color:var(--text);font-weight:700;}
+</style>
+</head>
+<body>
+<h2>Attack Type Comparison</h2>
+<p class="sub">// tap any card to see exam-testable differences and detection indicators</p>
+
+<div class="grid" id="grid"></div>
+<div class="info-panel" id="info-panel">
+  <div class="hint">Tap any attack type above →</div>
+</div>
+
+<script>
+const attacks = [
+  {
+    name:'Phishing', tag:'Social Engineering', color:'#7c6dfa',
+    oneliner:'Mass email impersonating trusted entity',
+    title:'Phishing vs Spear Phishing vs Whaling',
+    detail:`<table>
+      <tr><th>Type</th><th>Target</th><th>Personalization</th></tr>
+      <tr><td>Phishing</td><td>Mass / anyone</td><td>Generic ("Your account is suspended")</td></tr>
+      <tr><td>Spear phishing</td><td>Specific individual</td><td>Uses researched personal details</td></tr>
+      <tr><td>Whaling</td><td>Executives (CEO, CFO)</td><td>High-value, sophisticated, legal-themed</td></tr>
+      <tr><td>Vishing</td><td>Any (via phone)</td><td>Voice call impersonation</td></tr>
+      <tr><td>Smishing</td><td>Any (via SMS)</td><td>Text message with malicious link</td></tr>
+    </table>
+    <br><strong style="color:#7c6dfa">Exam tip:</strong> Whaling = spear phishing targeting executives. BEC = compromising/spoofing executive email for financial fraud.`
+  },
+  {
+    name:'Watering Hole', tag:'Network-based SE', color:'#ffd166',
+    oneliner:'Compromise a site the target group trusts',
+    title:'Watering Hole Attack',
+    detail:`<strong>How it works:</strong> Attacker profiles the target group, identifies websites they frequently visit (industry forums, supplier portals, conference sites), compromises those sites, and injects malware. Any visitor is a potential victim.<br><br>
+    <strong style="color:#ffd166">Key exam differentiator:</strong> The attack targets a THIRD-PARTY site, not the organization directly. Hard to defend against because the victim trusts the compromised site.<br><br>
+    <strong>Detection:</strong> Web proxy logs showing connections to newly malicious domains, EDR alerts on drive-by download attempts.`
+  },
+  {
+    name:'BEC', tag:'Financial Fraud', color:'#ff6b6b',
+    oneliner:'Spoof/compromise exec email for wire fraud',
+    title:'Business Email Compromise (BEC)',
+    detail:`<strong>Goal:</strong> Trick financial staff into wiring money, changing payment details, or revealing sensitive info by impersonating an executive or trusted vendor.<br><br>
+    <table>
+      <tr><th>Indicator</th><th>What it means</th></tr>
+      <tr><td>Urgency</td><td>"Need this done immediately, I'm in a meeting"</td></tr>
+      <tr><td>Secrecy</td><td>"Don't tell anyone, this is confidential"</td></tr>
+      <tr><td>Domain spoofing</td><td>ceo@comp-any.com vs ceo@company.com</td></tr>
+      <tr><td>Process bypass</td><td>"Skip the normal approval process this once"</td></tr>
+    </table>
+    <br><strong style="color:#ff6b6b">Mitigation:</strong> Out-of-band verification (call the CEO directly), enforce wire transfer approval processes, DMARC/SPF/DKIM email authentication.`
+  },
+  {
+    name:'Ransomware', tag:'Malware', color:'#ff6b6b',
+    oneliner:'Encrypt files, demand ransom',
+    title:'Ransomware — Single vs Double Extortion',
+    detail:`<table>
+      <tr><th>Type</th><th>What happens</th><th>Backup alone enough?</th></tr>
+      <tr><td>Single extortion</td><td>Files encrypted, ransom for key</td><td>Yes — restore from backup</td></tr>
+      <tr><td>Double extortion</td><td>Encrypt + exfiltrate, threaten publication</td><td>No — data already stolen</td></tr>
+    </table>
+    <br><strong>Delivery:</strong> Phishing, exposed RDP (port 3389), vulnerable software, supply chain.<br>
+    <strong>Mitigations:</strong> Offline/immutable backups, network segmentation (limits spread), EDR, patch RDP/VPN, disable macros.`
+  },
+  {
+    name:'Rootkit', tag:'Malware - Stealth', color:'#7c6dfa',
+    oneliner:'Hides at kernel level, evades AV/EDR',
+    title:'Rootkit — Types & Detection',
+    detail:`<table>
+      <tr><th>Rootkit Type</th><th>Level</th><th>Difficulty to Remove</th></tr>
+      <tr><td>User-mode</td><td>Application/DLL</td><td>Moderate — can be removed from OS</td></tr>
+      <tr><td>Kernel (Ring 0)</td><td>OS kernel</td><td>Very hard — runs with highest privilege</td></tr>
+      <tr><td>Bootkit</td><td>Boot sector/MBR</td><td>Extreme — persists across OS reinstall</td></tr>
+      <tr><td>Firmware</td><td>BIOS/UEFI</td><td>Near-permanent — survives disk wipe</td></tr>
+    </table>
+    <br><strong>Detection:</strong> Offline scanning (boot from clean media), TPM attestation, Secure Boot, integrity monitoring.`
+  },
+  {
+    name:'MITM', tag:'Network Attack', color:'#00e5a0',
+    oneliner:'Intercept traffic between two parties',
+    title:'Man-in-the-Middle (MITM)',
+    detail:`<table>
+      <tr><th>Technique</th><th>How it works</th></tr>
+      <tr><td>ARP poisoning</td><td>Fake ARP replies associate attacker MAC with gateway IP (LAN)</td></tr>
+      <tr><td>Rogue Wi-Fi AP</td><td>Evil twin hotspot — victim connects thinking it's legitimate</td></tr>
+      <tr><td>SSL stripping</td><td>Downgrade HTTPS to HTTP, user sees unencrypted version</td></tr>
+      <tr><td>BGP hijacking</td><td>Announce false routes to redirect internet traffic</td></tr>
+    </table>
+    <br><strong>Mitigations:</strong> TLS (HTTPS), HSTS, certificate pinning, MFA, DAI (Dynamic ARP Inspection) on switches, VPN on untrusted networks.`
+  },
+  {
+    name:'SQLi / XSS', tag:'App Attack', color:'#00e5a0',
+    oneliner:'Inject malicious code into web apps',
+    title:'SQLi vs XSS — Key Differences',
+    detail:`<table>
+      <tr><th></th><th>SQL Injection</th><th>XSS</th></tr>
+      <tr><td>Target</td><td>Database server</td><td>User's browser</td></tr>
+      <tr><td>What's injected</td><td>SQL syntax</td><td>JavaScript</td></tr>
+      <tr><td>What's at risk</td><td>Database contents</td><td>Session tokens, credentials</td></tr>
+      <tr><td>Fix</td><td>Parameterized queries</td><td>Output encoding + CSP</td></tr>
+    </table>
+    <br><strong>XSS types:</strong> Stored (in DB, hits every visitor) > Reflected (in URL, needs victim to click) > DOM-based (modifies DOM without server).<br>
+    <strong style="color:#00e5a0">Exam tip:</strong> SQLi → parameterized queries. XSS → output encoding + Content Security Policy.`
+  },
+  {
+    name:'DoS / DDoS', tag:'Availability Attack', color:'#ff6b6b',
+    oneliner:'Overwhelm target to deny service',
+    title:'DoS / DDoS Attack Types',
+    detail:`<table>
+      <tr><th>Type</th><th>Mechanism</th><th>Example</th></tr>
+      <tr><td>Volumetric</td><td>Bandwidth flood</td><td>UDP flood, ICMP flood</td></tr>
+      <tr><td>Protocol</td><td>Exhaust server/network resources</td><td>SYN flood, Smurf attack</td></tr>
+      <tr><td>Application</td><td>Exploit app logic</td><td>HTTP flood, Slowloris</td></tr>
+      <tr><td>Amplification</td><td>Small request → large response</td><td>DNS amplification, NTP amplification</td></tr>
+    </table>
+    <br><strong>Mitigations:</strong> CDN/cloud scrubbing, rate limiting, BGP blackholing, SYN cookies, upstream provider filtering.`
+  },
+  {
+    name:'Supply Chain', tag:'Advanced Threat', color:'#ffd166',
+    oneliner:'Compromise vendor/library/update pipeline',
+    title:'Supply Chain Attacks',
+    detail:`<strong>Why it\'s dangerous:</strong> Target trusts the vendor → malicious code arrives pre-authenticated, pre-trusted, bypassing all perimeter defenses.<br><br>
+    <table>
+      <tr><th>Vector</th><th>Example</th></tr>
+      <tr><td>Software update</td><td>SolarWinds Orion (SUNBURST)</td></tr>
+      <tr><td>Open source library</td><td>Log4Shell (Log4j)</td></tr>
+      <tr><td>Typosquatting</td><td>Fake npm/pip package</td></tr>
+      <tr><td>Hardware implant</td><td>Compromised hardware at manufacture</td></tr>
+    </table>
+    <br><strong>Mitigations:</strong> Software composition analysis (SCA), vendor security assessments, code signing verification, SBOM (Software Bill of Materials).`
+  },
+];
+
+const grid = document.getElementById('grid');
+
+attacks.forEach(a => {
+  const card = document.createElement('div');
+  card.className = 'atk-card';
+  card.style.borderTopColor = a.color;
+  card.innerHTML = `<div class="atk-name" style="color:${a.color}">${a.name}</div><div class="atk-tag">${a.tag}</div><div class="atk-oneliner">${a.oneliner}</div>`;
+  card.onclick = () => {
+    document.querySelectorAll('.atk-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    const panel = document.getElementById('info-panel');
+    panel.innerHTML = `<div class="ip-title" style="color:${a.color}">${a.title}</div>${a.detail}`;
+    panel.style.borderLeftColor = a.color;
+    panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  };
+  grid.appendChild(card);
+});
+</script>
+</body>
+</html>

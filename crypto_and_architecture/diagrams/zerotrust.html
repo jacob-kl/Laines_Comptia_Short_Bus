@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero Trust Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent2);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;}
+  svg{width:100%;height:auto;display:block;cursor:pointer;}
+  .node rect,.node circle{transition:all .2s;}
+
+  /* Info panel — appears below diagram, not floating — safe on mobile */
+  .info-panel{
+    margin-top:12px;background:var(--surface2);border:1px solid var(--border);
+    border-left:3px solid var(--accent2);padding:14px 16px;
+    font-size:11px;line-height:1.65;min-height:60px;transition:all .3s;
+  }
+  .info-panel strong{color:var(--accent2);}
+  .info-panel .ip-title{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--accent2);margin-bottom:6px;}
+  .info-panel .ip-hint{color:var(--muted);font-style:italic;font-size:10px;}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:10px;color:var(--muted);}
+  .legend-item{display:flex;align-items:center;gap:5px;}
+  .legend-dot{width:8px;height:8px;border-radius:50%;}
+</style>
+</head>
+<body>
+<h2>Zero Trust Architecture</h2>
+<p class="sub">// tap/click any component to learn its role</p>
+
+<svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" id="zt-svg">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#252a38"/></marker>
+    <marker id="arr-acc" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#00e5a0"/></marker>
+    <marker id="arr-rej" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ff6b6b"/></marker>
+  </defs>
+
+  <!-- Zone backgrounds -->
+  <text x="14" y="22" font-family="Space Mono" font-size="9" fill="#252a38" letter-spacing="2">CONTROL PLANE</text>
+  <rect x="10" y="28" width="360" height="160" rx="4" fill="none" stroke="#252a38" stroke-dasharray="4,4"/>
+  <text x="14" y="212" font-family="Space Mono" font-size="9" fill="#252a38" letter-spacing="2">DATA PLANE</text>
+  <rect x="10" y="218" width="360" height="120" rx="4" fill="none" stroke="#252a38" stroke-dasharray="4,4"/>
+
+  <!-- Subject -->
+  <g class="node" id="node-subject" onclick="showInfo('subject')">
+    <circle cx="70" cy="310" r="32" fill="#12151c" stroke="#7c6dfa" stroke-width="1.5"/>
+    <text x="70" y="304" text-anchor="middle" font-family="Space Mono" font-size="18" fill="#7c6dfa">👤</text>
+    <text x="70" y="320" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#e8eaf0">SUBJECT</text>
+    <text x="70" y="330" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">(User/Device)</text>
+  </g>
+
+  <!-- Policy Engine -->
+  <g class="node" id="node-pe" onclick="showInfo('pe')">
+    <rect x="130" y="48" width="140" height="60" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1.5"/>
+    <text x="200" y="72" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00e5a0" letter-spacing="1">POLICY ENGINE</text>
+    <text x="200" y="86" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Grant / Deny decision</text>
+    <text x="200" y="98" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Evaluates trust signals</text>
+  </g>
+
+  <!-- Trust Signals -->
+  <g class="node" id="node-cdm" onclick="showInfo('cdm')">
+    <rect x="300" y="48" width="65" height="50" rx="3" fill="#12151c" stroke="#ffd166" stroke-width="1"/>
+    <text x="332" y="68" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd166">TRUST</text>
+    <text x="332" y="80" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd166">SIGNALS</text>
+    <text x="332" y="92" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">IdP/MDM</text>
+  </g>
+  <line x1="300" y1="73" x2="272" y2="73" stroke="#ffd166" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#arr)"/>
+
+  <!-- Policy Administrator -->
+  <g class="node" id="node-pa" onclick="showInfo('pa')">
+    <rect x="130" y="140" width="140" height="60" rx="3" fill="#12151c" stroke="#7c6dfa" stroke-width="1.5"/>
+    <text x="200" y="164" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#7c6dfa" letter-spacing="1">POLICY ADMIN</text>
+    <text x="200" y="178" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Issues / revokes tokens</text>
+    <text x="200" y="190" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Communicates to PEP</text>
+  </g>
+  <line x1="200" y1="108" x2="200" y2="138" stroke="#252a38" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="208" y="127" font-family="Space Mono" font-size="8" fill="#6b7280">Decision</text>
+
+  <!-- PEP -->
+  <g class="node" id="node-pep" onclick="showInfo('pep')">
+    <rect x="130" y="238" width="140" height="60" rx="3" fill="#12151c" stroke="#ff6b6b" stroke-width="1.5"/>
+    <text x="200" y="262" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ff6b6b" letter-spacing="1">POLICY ENF. PT</text>
+    <text x="200" y="276" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Allows / blocks traffic</text>
+    <text x="200" y="288" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">DATA PLANE gatekeeper</text>
+  </g>
+  <line x1="200" y1="200" x2="200" y2="236" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="208" y="222" font-family="Space Mono" font-size="8" fill="#6b7280">Token</text>
+
+  <!-- Subject → PEP -->
+  <path d="M 102,305 C 120,290 130,285 130,268" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="88" y="285" font-family="Space Mono" font-size="7" fill="#6b7280">Request</text>
+
+  <!-- ALLOW -->
+  <line x1="270" y1="265" x2="430" y2="265" stroke="#00e5a0" stroke-width="2" marker-end="url(#arr-acc)"/>
+  <text x="340" y="258" font-family="Space Mono" font-size="8" fill="#00e5a0">ALLOW</text>
+
+  <!-- DENY -->
+  <path d="M 270,280 L 340,280 L 340,350" fill="none" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arr-rej)"/>
+  <text x="345" y="318" font-family="Space Mono" font-size="8" fill="#ff6b6b">DENY</text>
+
+  <!-- Resource -->
+  <g class="node" id="node-resource" onclick="showInfo('resource')">
+    <rect x="430" y="238" width="120" height="60" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="490" y="262" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#00e5a0">RESOURCE</text>
+    <text x="490" y="276" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">App / API / Data</text>
+    <text x="490" y="288" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Protected endpoint</text>
+  </g>
+
+  <!-- Deny marker -->
+  <circle cx="340" cy="360" r="14" fill="#12151c" stroke="#ff6b6b" stroke-width="1.5"/>
+  <text x="340" y="364" text-anchor="middle" font-family="Space Mono" font-size="11" fill="#ff6b6b">✗</text>
+
+  <!-- Adaptive Identity note -->
+  <g class="node" id="node-adaptive" onclick="showInfo('adaptive')">
+    <rect x="560" y="48" width="185" height="80" rx="3" fill="#1a1e28" stroke="#7c6dfa" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="652" y="68" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#7c6dfa" letter-spacing="1">ADAPTIVE IDENTITY</text>
+    <text x="652" y="84" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Trust adjusts dynamically.</text>
+    <text x="652" y="96" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">New location → step-up MFA</text>
+    <text x="652" y="108" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Anomaly → session revoked</text>
+    <text x="652" y="120" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd166">Never permanently trusted.</text>
+  </g>
+
+  <!-- Traditional model note -->
+  <g class="node" id="node-trad" onclick="showInfo('trad')">
+    <rect x="560" y="150" width="185" height="70" rx="3" fill="#1a1e28" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="652" y="170" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ff6b6b" letter-spacing="1">TRADITIONAL MODEL</text>
+    <text x="652" y="186" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Inside firewall = trusted.</text>
+    <text x="652" y="198" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Once in → full access.</text>
+    <text x="652" y="210" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ff6b6b">Zero Trust eliminates this.</text>
+  </g>
+  <line x1="560" y1="88" x2="370" y2="78" stroke="#7c6dfa" stroke-width="1" stroke-dasharray="3,2" opacity=".4"/>
+</svg>
+
+<div class="info-panel" id="info-panel">
+  <div class="ip-hint">Tap any component above to learn about it →</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#00e5a0"></div>Allow / Accent</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c6dfa"></div>Control plane</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff6b6b"></div>Deny / Block</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffd166"></div>Trust signals</div>
+</div>
+
+<script>
+const INFO = {
+  subject:  { title:'Subject / User', text:'The entity requesting access. Could be a human user, device, or workload. In Zero Trust, network location does NOT grant trust — every subject must prove identity regardless of where they are connecting from.' },
+  pe:       { title:'Policy Engine (PE)', text:'The BRAIN of Zero Trust. Evaluates access requests against: identity verification, device health/posture, user risk score, behavioral context, time/location, and organizational policy. Makes the grant/deny decision. Part of the CONTROL PLANE.' },
+  cdm:      { title:'Trust Algorithm Inputs', text:'Signals fed into the Policy Engine: Identity provider (IdP/SSO), device compliance status (MDM/EDR), threat intelligence feeds, SIEM logs, behavioral analytics (UEBA). The richer the signals, the more accurate the trust decision.' },
+  pa:       { title:'Policy Administrator (PA)', text:'Receives the Policy Engine\'s decision and acts on it. Issues session tokens (approve) or sends revocation signals (deny). Communicates the decision to the Policy Enforcement Point. Part of the CONTROL PLANE. Bridge between decision and enforcement.' },
+  pep:      { title:'Policy Enforcement Point (PEP)', text:'The GATEKEEPER on the DATA PLANE. Receives the token/signal from the Policy Administrator and physically allows or blocks traffic to the protected resource. This is where the access control decision is EXECUTED — where enforcement actually happens.' },
+  resource: { title:'Protected Resource', text:'The service, application, data store, or API being requested. In Zero Trust, resources are NOT implicitly accessible from inside the network. Access is only granted through the PEP after verified identity and policy check.' },
+  adaptive: { title:'Adaptive Identity', text:'Trust is never static. The system continuously evaluates risk signals: unusual location, odd hours, device health change, anomalous data volume. Any of these can trigger step-up authentication requirements or session revocation. Trust is earned continuously, not granted permanently.' },
+  trad:     { title:'Traditional (Perimeter) Model', text:'The "castle-and-moat" approach. A strong perimeter firewall is the border — anything inside the network is trusted. The fatal flaw: once an attacker is inside (via phishing, stolen VPN creds, etc.) they have implicit trust and can move laterally freely. Zero Trust eliminates this assumption entirely.' },
+};
+
+function showInfo(id) {
+  const panel = document.getElementById('info-panel');
+  const data = INFO[id];
+  if (!data) return;
+  panel.innerHTML = `<div class="ip-title">${data.title}</div><div>${data.text}</div>`;
+  // pulse the panel
+  panel.style.borderLeftColor = 'var(--accent4)';
+  setTimeout(() => panel.style.borderLeftColor = 'var(--accent2)', 600);
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+</script>
+</body>
+</html>
