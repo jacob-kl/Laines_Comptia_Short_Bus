@@ -3,682 +3,181 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SEC+ SY0-701 · Crypto & Architecture</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #12151c;
-    --surface2: #1a1e28;
-    --border: #252a38;
-    --accent: #00e5a0;
-    --accent2: #7c6dfa;
-    --accent3: #ff6b6b;
-    --accent4: #ffd166;
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --mono: 'Space Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* NOISE OVERLAY */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.6;
-  }
-
-  /* GRID BACKGROUND */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: linear-gradient(var(--border) 1px, transparent 1px),
-                      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 24px; }
-
-  /* HEADER */
-  header {
-    padding: 60px 0 40px;
-    text-align: center;
-  }
-
-  .badge {
-    display: inline-block;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 4px 12px;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-  }
-
-  header h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -1px;
-  }
-
-  header h1 span { color: var(--accent); }
-
-  header p {
-    margin-top: 16px;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 13px;
-  }
-
-  /* NAV TABS */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    margin: 40px 0 32px;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-
-  .tab-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 1px;
-    padding: 12px 20px;
-    cursor: pointer;
-    white-space: nowrap;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-
-  .tab-btn:hover { color: var(--text); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* SECTIONS */
-  .section { display: none; animation: fadeIn 0.3s ease; }
-  .section.active { display: block; }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-  /* CARDS */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 28px;
-    margin-bottom: 20px;
-  }
-
-  .card-title {
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    font-family: var(--mono);
-    margin-bottom: 16px;
-  }
-
-  .card h3 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-  }
-
-  /* CONCEPT GRID */
-  .concept-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .concept-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .concept-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s;
-  }
-
-  .concept-card:hover::before,
-  .concept-card.open::before { transform: scaleX(1); }
-  .concept-card:hover { border-color: var(--accent); }
-
-  .concept-card .label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .concept-card .term {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 0;
-  }
-
-  .concept-card .def {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-top: 12px;
-    display: none;
-  }
-
-  .concept-card.open .def { display: block; }
-
-  .concept-card .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 12px;
-  }
-
-  .tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 2px 8px;
-    border: 1px solid;
-    border-radius: 0;
-  }
-
-  .tag.conf { color: var(--accent); border-color: var(--accent); }
-  .tag.integ { color: var(--accent2); border-color: var(--accent2); }
-  .tag.auth { color: var(--accent4); border-color: var(--accent4); }
-  .tag.nonrep { color: var(--accent3); border-color: var(--accent3); }
-
-  /* SCENARIO LAB */
-  .scenario-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent2);
-    padding: 24px;
-    margin-bottom: 24px;
-  }
-
-  .scenario-prompt {
-    font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.7;
-    margin-bottom: 20px;
-    color: var(--text);
-  }
-
-  .scenario-prompt strong { color: var(--accent4); }
-
-  .choices { display: flex; flex-direction: column; gap: 10px; }
-
-  .choice-btn {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    padding: 14px 18px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-    line-height: 1.5;
-  }
-
-  .choice-btn:hover:not(:disabled) { border-color: var(--accent2); color: var(--accent2); }
-  .choice-btn.correct { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.06); }
-  .choice-btn.wrong { border-color: var(--accent3); color: var(--accent3); background: rgba(255,107,107,0.06); }
-  .choice-btn:disabled { cursor: default; }
-
-  .feedback {
-    margin-top: 16px;
-    padding: 16px;
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.7;
-    display: none;
-    border-left: 3px solid;
-  }
-
-  .feedback.show { display: block; }
-  .feedback.correct { border-color: var(--accent); color: var(--accent); }
-  .feedback.wrong { border-color: var(--accent3); color: var(--muted); }
-  .feedback.wrong strong { color: var(--accent3); }
-
-  .next-btn {
-    margin-top: 16px;
-    background: none;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    padding: 10px 24px;
-    cursor: pointer;
-    text-transform: uppercase;
-    display: none;
-    transition: all 0.2s;
-  }
-
-  .next-btn:hover { background: var(--accent); color: var(--bg); }
-  .next-btn.show { display: inline-block; }
-
-  .scenario-counter {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 16px;
-  }
-
-  /* DRAG DROP */
-  .drag-area {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-
-  @media (max-width: 600px) { .drag-area { grid-template-columns: 1fr; } }
-
-  .drag-col h4 {
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-
-  .drag-items { min-height: 60px; display: flex; flex-direction: column; gap: 8px; }
-
-  .drag-item {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 12px 16px;
-    font-family: var(--mono);
-    font-size: 12px;
-    cursor: grab;
-    transition: all 0.2s;
-    user-select: none;
-  }
-
-  .drag-item:hover { border-color: var(--accent2); }
-  .drag-item.dragging { opacity: 0.4; }
-  .drag-item.correct { border-color: var(--accent); color: var(--accent); }
-  .drag-item.wrong { border-color: var(--accent3); color: var(--accent3); }
-
-  .drop-zone {
-    background: var(--surface);
-    border: 1px dashed var(--border);
-    min-height: 80px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: border-color 0.2s;
-  }
-
-  .drop-zone.over { border-color: var(--accent2); background: rgba(124,109,250,0.05); }
-  .drop-zone-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--border);
-    text-align: center;
-    padding: 16px;
-    display: none;
-  }
-
-  .drop-zone:empty .drop-zone-label { display: block; }
-
-  .check-btn, .reset-btn {
-    background: none;
-    border: 1px solid;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 2px;
-    padding: 10px 24px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    margin-right: 10px;
-  }
-
-  .check-btn { border-color: var(--accent2); color: var(--accent2); }
-  .check-btn:hover { background: var(--accent2); color: var(--bg); }
-  .reset-btn { border-color: var(--muted); color: var(--muted); }
-  .reset-btn:hover { background: var(--muted); color: var(--bg); }
-
-  /* FLASHCARD */
-  .flashcard-wrap { perspective: 1200px; margin-bottom: 24px; }
-
-  .flashcard {
-    width: 100%;
-    height: 220px;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
-    cursor: pointer;
-  }
-
-  .flashcard.flipped { transform: rotateY(180deg); }
-
-  .card-face {
-    position: absolute;
-    inset: 0;
-    backface-visibility: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    text-align: center;
-    flex-direction: column;
-    border: 1px solid var(--border);
-  }
-
-  .card-front { background: var(--surface); }
-  .card-back { background: var(--surface2); transform: rotateY(180deg); }
-
-  .card-front .hint {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .card-front .q {
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1.4;
-  }
-
-  .card-back .a {
-    font-family: var(--mono);
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--accent);
-  }
-
-  .card-nav {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 16px;
-  }
-
-  .card-nav button {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: var(--mono);
-    font-size: 20px;
-    width: 40px;
-    height: 40px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .card-nav button:hover { border-color: var(--text); color: var(--text); }
-
-  .card-progress {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    flex: 1;
-    text-align: center;
-  }
-
-  /* PROGRESS BAR */
-  .progress-bar {
-    background: var(--border);
-    height: 3px;
-    margin-bottom: 32px;
-    position: relative;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    transition: width 0.4s ease;
-  }
-
-  /* SCORE DISPLAY */
-  .score-display {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 20px 28px;
-    font-family: var(--mono);
-    font-size: 13px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .score-num {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--accent);
-    font-family: var(--sans);
-  }
-
-  /* TABLE */
-  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; margin-bottom: 20px; }
-  th { background: var(--surface2); color: var(--accent); text-align: left; padding: 12px 16px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-  td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--muted); line-height: 1.5; }
-  td:first-child { color: var(--text); font-weight: 700; }
-  tr:hover td { background: var(--surface2); }
-
-  /* SECTION HEADERS */
-  .section-header {
-    margin-bottom: 28px;
-  }
-
-  .section-header h2 {
-    font-size: 1.6rem;
-    font-weight: 800;
-  }
-
-  .section-header p {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 8px;
-  }
-
-  /* KEY RULE CALLOUT */
-  .callout {
-    background: rgba(0,229,160,0.05);
-    border: 1px solid rgba(0,229,160,0.2);
-    border-left: 3px solid var(--accent);
-    padding: 16px 20px;
-    margin-bottom: 16px;
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.7;
-    color: var(--text);
-  }
-
-  .callout strong { color: var(--accent); }
-
-  footer {
-    text-align: center;
-    padding: 60px 0 40px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--border);
-  }
-</style>
+<title>SEC+ SY0-701 · Crypto & Architecture Study Lab</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="wrap">
+
+  <!-- HEADER -->
   <header>
     <div class="badge">CompTIA Security+ · SY0-701</div>
     <h1>Crypto & <span>Architecture</span><br>Study Lab</h1>
-    <p>// interactive study guide · cryptographic solutions · mitigation · security architecture</p>
-  </header>
-
-  <div style="text-align:center;margin-bottom:20px;">
-    <a href="secplus_cheatsheet.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent4);border:1px solid var(--accent4);padding:10px 22px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,209,102,0.1)'" onmouseout="this.style.background='none'">
+    <p>// cryptographic solutions · mitigation · security architecture · interactive labs</p>
+    <a class="pdf-btn" href="secplus_cheatsheet.pdf" target="_blank">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
       Download PDF Cheat Sheet
     </a>
-  </div>
+  </header>
 
+  <!-- TABS -->
   <nav class="tabs">
-    <button class="tab-btn active" onclick="showTab('crypto-concepts')">Crypto Concepts</button>
-    <button class="tab-btn" onclick="showTab('crypto-scenarios')">Crypto Scenarios</button>
-    <button class="tab-btn" onclick="showTab('arch-concepts')">Architecture</button>
-    <button class="tab-btn" onclick="showTab('arch-scenarios')">Arch Scenarios</button>
-    <button class="tab-btn" onclick="showTab('drag-drop')">Match-Up Lab</button>
-    <button class="tab-btn" onclick="showTab('flashcards')">Flashcards</button>
-    <button class="tab-btn" onclick="showTab('reference')">Quick Reference</button>
-    <button class="tab-btn" onclick="showTab('pdf-viewer')">📄 PDF</button>
+    <button class="tab-btn active" onclick="showTab('crypto-concepts', this)">Crypto Concepts</button>
+    <button class="tab-btn" onclick="showTab('crypto-quiz', this)">Crypto Quiz</button>
+    <button class="tab-btn" onclick="showTab('arch-concepts', this)">Architecture</button>
+    <button class="tab-btn" onclick="showTab('arch-quiz', this)">Arch Quiz</button>
+    <button class="tab-btn" onclick="showTab('diagrams', this)">Diagrams</button>
+    <button class="tab-btn" onclick="showTab('drag-drop', this)">Match-Up Lab</button>
+    <button class="tab-btn" onclick="showTab('flashcards', this)">Flashcards</button>
+    <button class="tab-btn" onclick="showTab('reference', this)">Quick Reference</button>
+    <button class="tab-btn" onclick="showTab('pdf-viewer', this)">📄 PDF</button>
   </nav>
 
-  <!-- ===== CRYPTO CONCEPTS ===== -->
+  <!-- ═══════════ CRYPTO CONCEPTS ═══════════ -->
   <div class="section active" id="crypto-concepts">
     <div class="section-header">
       <h2>Cryptographic Solutions</h2>
       <p>// click any card to reveal the definition · tags show which CIA goal is served</p>
     </div>
-
     <div class="callout">
-      <strong>Exam pattern to know:</strong> The SY0-701 constantly tests WHICH goal a crypto tool serves.
-      Memorize: Encryption → Confidentiality · Hashing → Integrity · Digital Signatures → Integrity + Authenticity + Non-repudiation · PKI → all of the above.
+      <strong>Core exam pattern:</strong> Every crypto scenario tests WHICH goal a tool serves.
+      Encryption → Confidentiality &nbsp;·&nbsp; Hashing → Integrity &nbsp;·&nbsp;
+      Digital Signature → Integrity + Auth + Non-repudiation &nbsp;·&nbsp; PKI → enables all of the above.
     </div>
-
     <div class="concept-grid" id="crypto-grid"></div>
   </div>
 
-  <!-- ===== CRYPTO SCENARIOS ===== -->
-  <div class="section" id="crypto-scenarios">
+  <!-- ═══════════ CRYPTO QUIZ ═══════════ -->
+  <div class="section" id="crypto-quiz">
     <div class="section-header">
-      <h2>Crypto Scenario Practice</h2>
-      <p>// exam-style scenario questions · choose the best answer</p>
+      <h2>Crypto Scenario Quiz</h2>
+      <p>// 8 random questions from a bank of 24 · new set each attempt · full explanations for every answer</p>
     </div>
-    <div class="scenario-counter" id="cs-counter">Question 1 of 8</div>
-    <div class="scenario-box" id="crypto-scenario-box"></div>
-    <div class="score-display" id="cs-score" style="display:none">
-      <div class="score-num" id="cs-score-num">0</div>
-      <div>/ 8 correct · <span id="cs-pct">0%</span></div>
+    <div class="quiz-header">
+      <span class="quiz-counter" id="cs-counter">Question 1 of 8</span>
+      <span class="quiz-score-live" id="cs-score-live">Score: 0/0</span>
     </div>
+    <div class="progress-bar"><div class="progress-fill" id="cs-progress" style="width:0%"></div></div>
+    <div id="cs-box"></div>
+    <div class="score-display" id="cs-score-display"></div>
   </div>
 
-  <!-- ===== ARCHITECTURE CONCEPTS ===== -->
+  <!-- ═══════════ ARCH CONCEPTS ═══════════ -->
   <div class="section" id="arch-concepts">
     <div class="section-header">
       <h2>Mitigation & Security Architecture</h2>
       <p>// click any card to reveal details</p>
     </div>
-
-    <div class="callout">
-      <strong>Exam pattern to know:</strong> Architecture questions are almost always scenario-based. You need to pick the control or model that fits the constraint given — budget, environment type (cloud/on-prem), device type (IoT/ICS), or threat vector. Zero trust is heavily tested for 701.
+    <div class="callout purple">
+      <strong>Core exam pattern:</strong> Architecture questions are scenario-based — the exam gives a constraint
+      (environment type, budget, threat vector) and asks which control fits.
+      Zero Trust is heavily tested. Know the control plane components by name.
     </div>
-
     <div class="concept-grid" id="arch-grid"></div>
   </div>
 
-  <!-- ===== ARCH SCENARIOS ===== -->
-  <div class="section" id="arch-scenarios">
+  <!-- ═══════════ ARCH QUIZ ═══════════ -->
+  <div class="section" id="arch-quiz">
     <div class="section-header">
-      <h2>Architecture Scenario Practice</h2>
-      <p>// mitigation and architecture scenario questions</p>
+      <h2>Architecture Scenario Quiz</h2>
+      <p>// 8 random questions from a bank of 24 · new set each attempt · full explanations for every answer</p>
     </div>
-    <div class="scenario-counter" id="as-counter">Question 1 of 8</div>
-    <div class="scenario-box" id="arch-scenario-box"></div>
-    <div class="score-display" id="as-score" style="display:none">
-      <div class="score-num" id="as-score-num">0</div>
-      <div>/ 8 correct · <span id="as-pct">0%</span></div>
+    <div class="quiz-header">
+      <span class="quiz-counter" id="as-counter">Question 1 of 8</span>
+      <span class="quiz-score-live" id="as-score-live">Score: 0/0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="as-progress" style="width:0%"></div></div>
+    <div id="as-box"></div>
+    <div class="score-display" id="as-score-display"></div>
+  </div>
+
+  <!-- ═══════════ DIAGRAMS ═══════════ -->
+  <div class="section" id="diagrams">
+    <div class="section-header">
+      <h2>Interactive Diagrams</h2>
+      <p>// visual walkthroughs of the concepts that trip people up most</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Blockchain Hashing — Why It's Immutable</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">
+        Edit a block's data and watch how it breaks every subsequent block. This is the core of how blockchain uses hashing for integrity — not encryption.
+      </p>
+      <div class="callout yellow">
+        <strong>What the exam wants you to know:</strong> Blockchain uses hashing (SHA-256) for immutability. Each block stores the previous block's hash. Change any block → its hash changes → the next block's "previous hash" field no longer matches → chain broken → tampering detected. This is an integrity mechanism, not confidentiality.
+      </div>
+      <div class="diagram-label">↓ Live interactive demo — edit block data below</div>
+      <iframe class="diagram-frame" src="diagrams/blockchain.html" title="Blockchain hashing diagram"></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Zero Trust Architecture — Control & Data Plane</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">
+        Hover each component to understand its role. The Policy Engine decides, the Policy Administrator signals, the Policy Enforcement Point acts.
+      </p>
+      <div class="callout purple">
+        <strong>Exam shortcut:</strong> PE = brain (decides). PA = messenger (issues/revokes tokens). PEP = gatekeeper (allows/blocks traffic). Control plane = PE + PA. Data plane = PEP. Adaptive identity = trust adjusts dynamically based on risk signals.
+      </div>
+      <iframe class="diagram-frame" src="diagrams/zerotrust.html" title="Zero Trust architecture diagram" style="height:480px;"></iframe>
+    </div>
+
+    <div class="card">
+      <div class="card-title">PKI — Chain of Trust</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">
+        How a browser validates a certificate by walking the chain from end-entity → intermediate → root. Hover each node for details.
+      </p>
+      <div class="callout">
+        <strong>Exam shortcut:</strong> Root CA = offline, self-signed, trust anchor. Intermediate CA = online, issues end-entity certs, isolates Root from compromise. End-entity cert = binds domain/user to public key. Chain verification: cert → intermediate → root in trust store = VALID.
+      </div>
+      <iframe class="diagram-frame" src="diagrams/pki.html" title="PKI chain of trust diagram" style="height:470px;"></iframe>
     </div>
   </div>
 
-  <!-- ===== DRAG DROP ===== -->
+  <!-- ═══════════ DRAG & DROP ═══════════ -->
   <div class="section" id="drag-drop">
     <div class="section-header">
       <h2>Match-Up Lab</h2>
       <p>// drag each item to its correct category</p>
     </div>
-    <div id="drag-round-1">
-      <div class="card">
-        <div class="card-title">Round 1 · Symmetric vs Asymmetric</div>
-        <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:20px;">Drag each algorithm or property to its correct column.</p>
-        <div class="drag-area">
-          <div class="drag-col">
-            <h4>Items to Sort</h4>
-            <div class="drag-items" id="dd-source-1"></div>
-          </div>
-          <div class="drag-col">
-            <h4>Drop Zones</h4>
-            <div style="display:flex;flex-direction:column;gap:16px;">
-              <div>
-                <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;">SYMMETRIC</div>
-                <div class="drop-zone" id="dz-sym" data-cat="sym"><div class="drop-zone-label">Drop here</div></div>
-              </div>
-              <div>
-                <div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:6px;">ASYMMETRIC</div>
-                <div class="drop-zone" id="dz-asym" data-cat="asym"><div class="drop-zone-label">Drop here</div></div>
-              </div>
-              <div>
-                <div style="font-family:var(--mono);font-size:11px;color:var(--accent4);margin-bottom:6px;">HASHING</div>
-                <div class="drop-zone" id="dz-hash" data-cat="hash"><div class="drop-zone-label">Drop here</div></div>
-              </div>
+
+    <div class="card" id="drag-round-1">
+      <div class="card-title">Round 1 · Symmetric vs Asymmetric vs Hashing</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:20px;">
+        Drag each algorithm or mechanism to the correct category. Items shuffle on reset.
+      </p>
+      <div class="drag-area">
+        <div class="drag-col">
+          <h4>Items to Sort</h4>
+          <div class="drag-items" id="dd-source-1"></div>
+        </div>
+        <div class="drag-col">
+          <h4>Categories</h4>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;letter-spacing:1px;">SYMMETRIC</div>
+              <div class="drop-zone" id="dz-sym" data-cat="sym"><div class="drop-zone-label">Drop here</div></div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:6px;letter-spacing:1px;">ASYMMETRIC</div>
+              <div class="drop-zone" id="dz-asym" data-cat="asym"><div class="drop-zone-label">Drop here</div></div>
+            </div>
+            <div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--accent4);margin-bottom:6px;letter-spacing:1px;">HASHING</div>
+              <div class="drop-zone" id="dz-hash" data-cat="hash"><div class="drop-zone-label">Drop here</div></div>
             </div>
           </div>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="check-btn" onclick="checkDragDrop1()">Check Answers</button>
-          <button class="reset-btn" onclick="resetDragDrop1()">Reset</button>
-        </div>
-        <div class="feedback" id="dd1-feedback"></div>
       </div>
+      <button class="check-btn" onclick="checkDragDrop1()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop1()">Shuffle & Reset</button>
+      <div class="feedback" id="dd1-feedback"></div>
     </div>
 
     <div class="card" style="margin-top:20px;">
       <div class="card-title">Round 2 · Mitigation Technique Matching</div>
-      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:20px;">Drag each scenario to the mitigation technique that best addresses it.</p>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:20px;">
+        Match each scenario description to the mitigation technique it describes. Items shuffle on reset.
+      </p>
       <div class="drag-area">
         <div class="drag-col">
           <h4>Scenarios</h4>
@@ -688,31 +187,31 @@
           <h4>Techniques</h4>
           <div style="display:flex;flex-direction:column;gap:16px;">
             <div>
-              <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;">SEGMENTATION</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:6px;letter-spacing:1px;">SEGMENTATION</div>
               <div class="drop-zone" id="dz-seg" data-cat="seg"><div class="drop-zone-label">Drop here</div></div>
             </div>
             <div>
-              <div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:6px;">HARDENING</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:6px;letter-spacing:1px;">HARDENING</div>
               <div class="drop-zone" id="dz-hard" data-cat="hard"><div class="drop-zone-label">Drop here</div></div>
             </div>
             <div>
-              <div style="font-family:var(--mono);font-size:11px;color:var(--accent4);margin-bottom:6px;">ACCESS CONTROL</div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--accent4);margin-bottom:6px;letter-spacing:1px;">ACCESS CONTROL</div>
               <div class="drop-zone" id="dz-ac" data-cat="ac"><div class="drop-zone-label">Drop here</div></div>
             </div>
           </div>
         </div>
       </div>
       <button class="check-btn" onclick="checkDragDrop2()">Check Answers</button>
-      <button class="reset-btn" onclick="resetDragDrop2()" style="margin-left:10px;">Reset</button>
+      <button class="reset-btn" onclick="resetDragDrop2()" style="margin-left:10px;">Shuffle & Reset</button>
       <div class="feedback" id="dd2-feedback"></div>
     </div>
   </div>
 
-  <!-- ===== FLASHCARDS ===== -->
+  <!-- ═══════════ FLASHCARDS ═══════════ -->
   <div class="section" id="flashcards">
     <div class="section-header">
       <h2>Flashcards</h2>
-      <p>// click card to flip · use arrows to navigate</p>
+      <p>// click card to flip · arrows to navigate · shuffle anytime</p>
     </div>
 
     <div class="flashcard-wrap">
@@ -729,544 +228,182 @@
 
     <div class="card-nav">
       <button onclick="prevCard()">&#8592;</button>
-      <div class="card-progress" id="fc-progress">1 / 20</div>
+      <div class="card-progress" id="fc-progress">1 / 22</div>
       <button onclick="nextCard()">&#8594;</button>
     </div>
 
-    <div style="margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--muted);">
-      Filter: 
-      <button onclick="filterCards('all')" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:4px 10px;cursor:pointer;margin:0 4px;" id="filter-all">All</button>
-      <button onclick="filterCards('crypto')" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:4px 10px;cursor:pointer;margin:0 4px;" id="filter-crypto">Crypto</button>
-      <button onclick="filterCards('arch')" style="background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;padding:4px 10px;cursor:pointer;margin:0 4px;" id="filter-arch">Architecture</button>
+    <div style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      Filter:
+      <button class="fc-filter-btn active" id="filter-all"    onclick="filterCards('all')">All</button>
+      <button class="fc-filter-btn"        id="filter-crypto" onclick="filterCards('crypto')">Crypto</button>
+      <button class="fc-filter-btn"        id="filter-arch"   onclick="filterCards('arch')">Architecture</button>
+      <span style="margin-left:8px;">|</span>
+      <button class="fc-filter-btn" onclick="shuffleCards()">🔀 Shuffle</button>
     </div>
   </div>
 
-  <!-- ===== QUICK REFERENCE ===== -->
+  <!-- ═══════════ QUICK REFERENCE ═══════════ -->
   <div class="section" id="reference">
     <div class="section-header">
       <h2>Quick Reference</h2>
-      <p>// cheat sheet for exam day · both domains</p>
+      <p>// full cheat tables for both domains</p>
     </div>
 
     <div class="card">
-      <div class="card-title">Cryptographic Algorithms at a Glance</div>
+      <div class="card-title">Algorithms at a Glance</div>
       <table>
-        <tr><th>Algorithm</th><th>Type</th><th>Use Case</th><th>Key Size (typical)</th></tr>
-        <tr><td>AES</td><td>Symmetric block</td><td>Bulk data encryption, disk, VPN</td><td>128 / 192 / 256-bit</td></tr>
-        <tr><td>3DES</td><td>Symmetric block</td><td>Legacy systems (avoid)</td><td>168-bit effective</td></tr>
-        <tr><td>ChaCha20</td><td>Symmetric stream</td><td>Mobile, TLS where AES-NI absent</td><td>256-bit</td></tr>
-        <tr><td>RSA</td><td>Asymmetric</td><td>Key exchange, digital signatures</td><td>2048 / 4096-bit</td></tr>
-        <tr><td>ECC</td><td>Asymmetric</td><td>Mobile, IoT — small key, strong</td><td>256-bit ≈ RSA 3072</td></tr>
-        <tr><td>Diffie-Hellman</td><td>Key exchange</td><td>Establish shared secret over public channel</td><td>—</td></tr>
-        <tr><td>SHA-256</td><td>Hash</td><td>File integrity, certificates, blockchain</td><td>256-bit output</td></tr>
-        <tr><td>SHA-3 / Keccak</td><td>Hash</td><td>Newer standard, different algorithm family</td><td>Variable</td></tr>
-        <tr><td>HMAC</td><td>Hash + key</td><td>Message authentication with shared key</td><td>—</td></tr>
-        <tr><td>bcrypt / Argon2</td><td>Key stretching</td><td>Password storage</td><td>—</td></tr>
+        <tr><th>Algorithm</th><th>Type</th><th>Use Case</th><th>Key/Output</th></tr>
+        <tr><td>AES-256</td><td>Symmetric block</td><td>Disk encryption, VPN, TLS bulk data</td><td>256-bit key</td></tr>
+        <tr><td>ChaCha20</td><td>Symmetric stream</td><td>Mobile/IoT, TLS where AES-NI unavailable</td><td>256-bit key</td></tr>
+        <tr><td>3DES</td><td>Symmetric block</td><td>Legacy only — avoid in new systems</td><td>168-bit effective</td></tr>
+        <tr><td>RSA</td><td>Asymmetric</td><td>Key exchange, signatures (slow)</td><td>2048–4096-bit</td></tr>
+        <tr><td>ECC / ECDSA</td><td>Asymmetric</td><td>Mobile, IoT — strong with small keys</td><td>256-bit ≈ RSA 3072</td></tr>
+        <tr><td>Diffie-Hellman / ECDH</td><td>Key exchange</td><td>Establish shared secret over public channel</td><td>—</td></tr>
+        <tr><td>SHA-256 / SHA-3</td><td>Hash</td><td>File integrity, password hashing, certs</td><td>256-bit output</td></tr>
+        <tr><td>HMAC</td><td>Hash + shared key</td><td>Message authentication — proves sender knows key</td><td>—</td></tr>
+        <tr><td>bcrypt / Argon2</td><td>Key stretching</td><td>Password storage — deliberately slow</td><td>—</td></tr>
       </table>
     </div>
 
     <div class="card">
       <div class="card-title">PKI Components</div>
       <table>
-        <tr><th>Component</th><th>Role</th></tr>
-        <tr><td>Root CA</td><td>Apex of trust chain. Offline in most orgs. Signs intermediate CAs.</td></tr>
-        <tr><td>Intermediate CA</td><td>Issues end-entity certificates. Online. Compromise isolated from root.</td></tr>
-        <tr><td>Certificate</td><td>Binds public key to identity. Signed by CA. Contains subject, validity, SAN, key usage.</td></tr>
-        <tr><td>CSR</td><td>Certificate Signing Request. Entity generates keypair, sends public key + info to CA.</td></tr>
-        <tr><td>CRL</td><td>Certificate Revocation List. Periodic list of revoked certs. Stale between publishes.</td></tr>
-        <tr><td>OCSP</td><td>Online Certificate Status Protocol. Real-time revocation check. Better than CRL.</td></tr>
-        <tr><td>OCSP Stapling</td><td>Server caches OCSP response and presents it. Reduces OCSP server load.</td></tr>
-        <tr><td>Wildcard cert</td><td>*.domain.com — covers all subdomains. One compromise = all exposed.</td></tr>
-        <tr><td>SAN cert</td><td>Subject Alternative Name. Lists specific domains. More secure than wildcard.</td></tr>
+        <tr><th>Component</th><th>Description</th></tr>
+        <tr><td>Root CA</td><td>Self-signed. Trust anchor. Must be OFFLINE/air-gapped. Signs only intermediate CAs.</td></tr>
+        <tr><td>Intermediate CA</td><td>Signed by root. Online. Issues end-entity certs. Compromise isolated from root.</td></tr>
+        <tr><td>Certificate</td><td>Binds subject identity to public key. Contains: subject, SAN, validity, key usage. Signed by CA.</td></tr>
+        <tr><td>CSR</td><td>Entity generates keypair, sends public key + identity info to CA for signing. Private key NEVER sent.</td></tr>
+        <tr><td>CRL</td><td>Revocation list. Downloaded periodically. Can be stale between publications.</td></tr>
+        <tr><td>OCSP</td><td>Real-time per-cert revocation check. Better freshness than CRL.</td></tr>
+        <tr><td>OCSP Stapling</td><td>Server caches OCSP response, presents in TLS handshake. Removes OCSP server dependency.</td></tr>
+        <tr><td>Wildcard cert</td><td>*.domain.com — all subdomains. One compromise = all subdomains affected.</td></tr>
+        <tr><td>SAN cert</td><td>Lists specific FQDNs. More granular — compromise limited to listed domains.</td></tr>
       </table>
     </div>
 
     <div class="card">
-      <div class="card-title">Mitigation Techniques</div>
+      <div class="card-title">Zero Trust Components</div>
       <table>
-        <tr><th>Technique</th><th>What It Does</th><th>When Exam Picks It</th></tr>
-        <tr><td>Segmentation</td><td>Divides network into zones (VLANs, subnets)</td><td>Contain lateral movement; isolate IoT or OT from corporate net</td></tr>
-        <tr><td>Hardening</td><td>Disable unneeded services/ports, change defaults, patch</td><td>New system deployment; reducing attack surface</td></tr>
-        <tr><td>Patching</td><td>Apply vendor fixes to known CVEs</td><td>Vulnerability management; specific CVE in scenario</td></tr>
-        <tr><td>Least privilege</td><td>Grant minimum rights needed for the role</td><td>Insider threat; privilege escalation scenario</td></tr>
-        <tr><td>Access control</td><td>RBAC / ABAC / MAC / DAC enforce who can do what</td><td>HR data accessed by wrong dept; need-to-know enforcement</td></tr>
-        <tr><td>Isolation / sandboxing</td><td>Run untrusted code in contained env</td><td>Malware analysis; browser zero-days; legacy app</td></tr>
-        <tr><td>Encryption at rest</td><td>Protect stored data if media is stolen</td><td>Laptop theft; decommissioned drive</td></tr>
-        <tr><td>Encryption in transit</td><td>TLS/HTTPS protects data on the wire</td><td>MITM scenario; unsecured Wi-Fi</td></tr>
-        <tr><td>Monitoring / logging</td><td>SIEM, IDS, audit logs for detection</td><td>Detect post-compromise; compliance</td></tr>
-        <tr><td>Deception tech</td><td>Honeypots, honeynets to detect attackers</td><td>Internal threat hunting; early detection</td></tr>
+        <tr><th>Component</th><th>Plane</th><th>Role</th></tr>
+        <tr><td>Policy Engine (PE)</td><td>Control</td><td>Brain. Evaluates access request vs policy, risk score, device health, context. Makes grant/deny.</td></tr>
+        <tr><td>Policy Administrator (PA)</td><td>Control</td><td>Issues/revokes session tokens based on PE decision. Communicates with PEP.</td></tr>
+        <tr><td>Policy Enforcement Point (PEP)</td><td>Data</td><td>Gatekeeper. Physically allows or blocks traffic based on PA signal.</td></tr>
+        <tr><td>Adaptive Identity</td><td>—</td><td>Trust score changes dynamically with risk signals. Anomaly → step-up auth or revocation.</td></tr>
+        <tr><td>Micro-segmentation</td><td>Data</td><td>Granular east-west workload control. No implicit trust between servers on same network.</td></tr>
       </table>
     </div>
 
     <div class="card">
-      <div class="card-title">Zero Trust vs Traditional — Core Difference</div>
-      <div class="callout">
-        <strong>Traditional (perimeter/castle-and-moat):</strong> Trust everything inside the network. Firewall at the edge. Once you're in, you're trusted.<br><br>
-        <strong>Zero Trust:</strong> Never trust, always verify. Every request authenticated regardless of network location. Control plane (policy engine/PA) evaluates every access decision. Data plane enforces it. Adaptive identity — trust score changes with behavior/context.
-      </div>
+      <div class="card-title">Access Control Models</div>
       <table>
-        <tr><th>Zero Trust Component</th><th>What It Does</th></tr>
-        <tr><td>Policy Engine (PE)</td><td>Brain. Evaluates access requests against policy, user risk, device health.</td></tr>
-        <tr><td>Policy Administrator (PA)</td><td>Issues/revokes session tokens based on PE decision.</td></tr>
-        <tr><td>Policy Enforcement Point (PEP)</td><td>Gatekeeper. Allows or blocks traffic based on PA token.</td></tr>
-        <tr><td>Micro-segmentation</td><td>East-west traffic controlled granularly. No implicit trust between workloads.</td></tr>
-        <tr><td>Adaptive identity</td><td>Trust score adjusts dynamically — anomalous behavior triggers step-up auth.</td></tr>
+        <tr><th>Model</th><th>Decision Basis</th><th>Exam Trigger</th></tr>
+        <tr><td>RBAC</td><td>User's role / job function</td><td>"Based on job role" — most common in enterprise</td></tr>
+        <tr><td>ABAC</td><td>Multiple attributes simultaneously (dept, device, time, location)</td><td>"Multiple conditions" — fine-grained dynamic policy</td></tr>
+        <tr><td>MAC</td><td>Security classification labels (Top Secret / Secret / etc.)</td><td>Military or government classification scenario</td></tr>
+        <tr><td>DAC</td><td>Resource owner grants/revokes access to their own files</td><td>"Owner controls access" — like file system permissions</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Scenario Decision Guide — Crypto</div>
+      <table>
+        <tr><th>Scenario says...</th><th>Answer</th></tr>
+        <tr><td>Bulk data / disk / fast encryption</td><td>AES (symmetric)</td></tr>
+        <tr><td>Mobile or IoT, limited battery</td><td>ECC (asymmetric)</td></tr>
+        <tr><td>Prove who sent it + not tampered</td><td>Digital Signature</td></tr>
+        <tr><td>Real-time certificate revocation</td><td>OCSP (not CRL)</td></tr>
+        <tr><td>Two users, same password, different hashes</td><td>Salting</td></tr>
+        <tr><td>Brute-force resistant password storage</td><td>bcrypt / Argon2</td></tr>
+        <tr><td>Key in hardware, never exposed plaintext</td><td>HSM</td></tr>
+        <tr><td>Data hidden inside an image file</td><td>Steganography</td></tr>
+        <tr><td>Key recovery if employee leaves</td><td>Key Escrow</td></tr>
+        <tr><td>Past sessions safe even if key compromised later</td><td>Forward Secrecy (PFS)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Scenario Decision Guide — Architecture</div>
+      <table>
+        <tr><th>Scenario says...</th><th>Answer</th></tr>
+        <tr><td>IoT / OT on same network as workstations</td><td>Network segmentation / VLAN isolation</td></tr>
+        <tr><td>New server before going live</td><td>System hardening</td></tr>
+        <tr><td>Run suspicious executable safely</td><td>Sandboxing / isolation</td></tr>
+        <tr><td>Detect attacker already inside</td><td>Honeypot</td></tr>
+        <tr><td>Never trust always verify + identity</td><td>Zero Trust</td></tr>
+        <tr><td>Trust score changes based on behavior</td><td>Adaptive Identity (ZT)</td></tr>
+        <tr><td>Provider manages OS, customer manages app</td><td>PaaS</td></tr>
+        <tr><td>Military classification labels</td><td>MAC</td></tr>
+        <tr><td>Based on job role</td><td>RBAC</td></tr>
+        <tr><td>Multiple overlapping controls, no single reliance</td><td>Defense in Depth</td></tr>
+        <tr><td>One person can't complete sensitive task alone</td><td>Separation of Duties</td></tr>
+        <tr><td>Workload-level east-west traffic control</td><td>Micro-segmentation</td></tr>
       </table>
     </div>
   </div>
 
-  <!-- ===== PDF VIEWER ===== -->
+  <!-- ═══════════ PDF VIEWER ═══════════ -->
   <div class="section" id="pdf-viewer">
     <div class="section-header">
       <h2>PDF Cheat Sheet</h2>
-      <p>// view inline or download for offline study</p>
+      <p>// view inline or download for offline study · printable dark-themed reference</p>
     </div>
-    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-      <a href="secplus_cheatsheet.pdf" target="_blank" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent4);border:1px solid var(--accent4);padding:10px 22px;text-decoration:none;" onmouseover="this.style.background='rgba(255,209,102,0.1)'" onmouseout="this.style.background='none'">
-        ↗ Open in New Tab
-      </a>
-      <a href="secplus_cheatsheet.pdf" download style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:10px 22px;text-decoration:none;" onmouseover="this.style.background='rgba(0,229,160,0.1)'" onmouseout="this.style.background='none'">
-        ↓ Download PDF
-      </a>
+    <div class="pdf-actions">
+      <a class="pdf-action-btn open" href="secplus_cheatsheet.pdf" target="_blank">↗ Open in New Tab</a>
+      <a class="pdf-action-btn dl"   href="secplus_cheatsheet.pdf" download>↓ Download PDF</a>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);overflow:hidden;">
-      <iframe src="secplus_cheatsheet.pdf" width="100%" height="780px" style="display:block;border:none;" title="SEC+ Cheat Sheet PDF"></iframe>
-    </div>
-    <p style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;">If the PDF doesn't render inline, use the Open or Download buttons above. Works best on desktop Chrome/Firefox.</p>
+    <iframe src="secplus_cheatsheet.pdf" width="100%" height="800px"
+      style="display:block;border:1px solid var(--border);background:var(--surface);"
+      title="SEC+ Cheat Sheet PDF"></iframe>
+    <p style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:10px;">
+      PDF renders inline on desktop Chrome/Firefox. Mobile and Safari may open it in a new tab instead — use the buttons above.
+    </p>
   </div>
 
-  <footer>Built for SY0-701 exam prep · Good luck on the test 🔒</footer>
+  <footer>Built for SY0-701 exam prep &nbsp;·&nbsp; Good luck on the test 🔒</footer>
 </div>
 
+<!-- ── SCRIPTS ── -->
+<script src="js/crypto.js"></script>
+<script src="js/arch.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/flashcards.js"></script>
+<script src="js/dragdrop.js"></script>
 <script>
-// ===== DATA =====
-
-const cryptoConcepts = [
-  { label: 'Symmetric', term: 'AES', def: 'Advanced Encryption Standard. Block cipher, 128/192/256-bit keys. Fast — best for bulk data encryption, full disk, VPN tunnels. Shared key = both sides must have the same key securely.', tags: ['conf'] },
-  { label: 'Asymmetric', term: 'RSA', def: 'Uses public/private key pair. Public key encrypts or verifies; private key decrypts or signs. Slow — not used for bulk data, used for key exchange and digital signatures. Secure key size today: 2048-bit minimum, 4096 preferred.', tags: ['conf','auth'] },
-  { label: 'Asymmetric', term: 'ECC (Elliptic Curve)', def: 'Smaller key sizes = same security as RSA with less compute. 256-bit ECC ≈ 3072-bit RSA. Ideal for mobile, IoT, embedded systems. ECDSA = signing, ECDH = key agreement.', tags: ['conf','auth'] },
-  { label: 'Hashing', term: 'SHA-256 / SHA-3', def: 'One-way function. Fixed-length output regardless of input size. Used for file integrity, password hashing, certificate fingerprints. You CANNOT decrypt a hash — that is the point. SHA-3 uses a different internal algorithm (Keccak sponge) than SHA-2.', tags: ['integ'] },
-  { label: 'Auth + Integrity', term: 'Digital Signature', def: 'Hash the message → encrypt hash with private key = signature. Receiver verifies: decrypt signature with public key → re-hash message → compare. Proves: who sent it (auth), it wasn\'t changed (integrity), and sender can\'t deny it (non-repudiation).', tags: ['integ','auth','nonrep'] },
-  { label: 'PKI', term: 'Certificate Authority (CA)', def: 'Trusted entity that issues digital certificates binding a public key to an identity. Root CA = trust anchor (offline). Intermediate CA = issues end-entity certs (online). Chain of trust: end cert → intermediate → root.', tags: ['auth'] },
-  { label: 'PKI', term: 'OCSP vs CRL', def: 'Both are certificate revocation mechanisms. CRL = download the whole list periodically (stale). OCSP = real-time single-cert status check. OCSP Stapling = server caches and presents OCSP response to client — reduces OCSP server load.', tags: ['auth','integ'] },
-  { label: 'Key Management', term: 'Key Escrow', def: 'A copy of a private key is held by a trusted third party (or government). Allows recovery if key is lost, or lawful intercept. Controversial — the escrow itself is a high-value target.', tags: ['conf'] },
-  { label: 'Key Stretching', term: 'bcrypt / PBKDF2 / Argon2', def: 'Deliberately slow hashing functions for passwords. Adds a work factor (iterations) so brute-force is computationally expensive. Salting adds a random value before hashing — defeats rainbow tables even if two users share the same password.', tags: ['auth'] },
-  { label: 'Hardware', term: 'TPM / HSM', def: 'TPM (Trusted Platform Module): chip on the motherboard that stores keys, measures boot integrity (secure boot, attestation). HSM (Hardware Security Module): dedicated device for cryptographic operations at scale — key generation, signing, encryption. Keys never leave the HSM in plaintext.', tags: ['conf','integ','auth'] },
-  { label: 'Protocol', term: 'TLS Handshake', def: 'Negotiates cipher suite, authenticates server (and optionally client) via certificate, establishes session keys using asymmetric (key exchange) then switches to symmetric (AES) for bulk data. TLS 1.3 removed weak ciphers and RSA key exchange.', tags: ['conf','auth','integ'] },
-  { label: 'Obfuscation', term: 'Steganography', def: 'Hiding data inside another file (image, audio, video) so its existence is concealed. Not encryption — the data isn\'t scrambled, just hidden. Exam often contrasts this with encryption: steganography = hides existence, encryption = hides meaning.', tags: ['conf'] },
-];
-
-const archConcepts = [
-  { label: 'Zero Trust', term: 'Never Trust, Always Verify', def: 'No implicit trust based on network location. Every access request is authenticated, authorized, and continuously validated regardless of where it originates — inside or outside the perimeter.', tags: ['integ','auth'] },
-  { label: 'Zero Trust Component', term: 'Policy Engine / PA / PEP', def: 'Policy Engine (brain) evaluates access. Policy Administrator issues/revokes tokens. Policy Enforcement Point is the gatekeeper that allows or blocks actual traffic. Control plane vs. data plane separation.', tags: ['auth'] },
-  { label: 'Segmentation', term: 'Network Segmentation', def: 'Divides a network into zones (VLANs, subnets, DMZ). Limits lateral movement after a breach. IoT/OT should be on separate segments from corporate. Micro-segmentation extends this to individual workloads.', tags: ['conf','integ'] },
-  { label: 'Cloud', term: 'IaaS / PaaS / SaaS', def: 'IaaS: you manage OS up, provider manages physical/hypervisor. PaaS: you manage app and data, provider manages runtime + below. SaaS: provider manages everything, you just use the app. Shared responsibility model shifts with each tier.', tags: ['conf'] },
-  { label: 'Cloud', term: 'Shared Responsibility Model', def: 'Security responsibilities split between cloud provider and customer. Provider: physical security, hypervisor, core infrastructure. Customer: data classification, access management, application config. Varies by IaaS/PaaS/SaaS tier.', tags: ['conf','integ'] },
-  { label: 'Hardening', term: 'System Hardening', def: 'Reduce attack surface: disable unused ports/services, remove unnecessary software, change default credentials, apply patches, enable host-based firewall, enable audit logging. CIS Benchmarks provide step-by-step hardening guides.', tags: ['integ'] },
-  { label: 'Access Control', term: 'RBAC / ABAC / MAC / DAC', def: 'RBAC: permissions assigned to roles (most common in orgs). ABAC: access based on attributes (user dept, device type, time). MAC: labels (Top Secret/Secret/etc) — used in military/government. DAC: resource owner controls access (like file system permissions).', tags: ['auth'] },
-  { label: 'Embedded / ICS', term: 'SCADA / ICS / IoT', def: 'Industrial control systems often run legacy OS, no patching capability, proprietary protocols. Security: air-gap or segment, unidirectional gateways, monitor passively (active scanning can crash PLCs). IoT: change defaults, network isolation, firmware updates.', tags: ['conf','integ'] },
-  { label: 'Deception', term: 'Honeypot / Honeynet', def: 'Honeypot: fake system designed to attract and detect attackers. Honeynet: network of honeypots. Goal: early detection, threat intel, slowing attacker. No legitimate traffic = any connection is suspicious.', tags: ['integ'] },
-  { label: 'Infrastructure', term: 'SDN (Software Defined Networking)', def: 'Separates control plane (routing decisions) from data plane (packet forwarding). Centralized controller — enables dynamic policy enforcement, network segmentation via software, faster response to incidents.', tags: ['conf','integ'] },
-  { label: 'Mitigation', term: 'Isolation / Sandboxing', def: 'Run untrusted code or processes in a contained environment with limited access to real resources. Used for malware analysis, browser security, legacy app containment. Prevents escape to the broader system.', tags: ['conf','integ'] },
-  { label: 'Resilience', term: 'Defense in Depth', def: 'Layered security — no single control is relied on. If the firewall fails, IDS catches it. If IDS misses it, endpoint protection catches it. Redundancy of controls across technical, administrative, and physical layers.', tags: ['conf','integ','auth'] },
-];
-
-const cryptoScenarios = [
-  {
-    q: 'A company needs to encrypt 10TB of data stored on disk. Performance is critical — decryption must be fast. Which algorithm should they choose?',
-    choices: ['RSA-4096', 'AES-256', 'SHA-256', 'ECDSA'],
-    correct: 1,
-    explanation: 'AES-256 is symmetric encryption — fast, designed for bulk data. RSA is asymmetric (slow, not for bulk data). SHA-256 is a hash function (not encryption). ECDSA is used for digital signatures.'
-  },
-  {
-    q: 'Alice wants to send Bob a message and prove she sent it. Bob needs to verify the message wasn\'t tampered with. Which mechanism should she use?',
-    choices: ['Encrypt with AES using a shared key', 'Apply a digital signature using her private key', 'Hash the message with SHA-256 and send the hash separately', 'Use Bob\'s public key to encrypt the message'],
-    correct: 1,
-    explanation: 'A digital signature uses Alice\'s private key. Bob verifies with Alice\'s public key. This provides authentication (who sent it), integrity (unchanged), and non-repudiation (Alice can\'t deny it). AES shared key doesn\'t prove identity. Sending the hash separately doesn\'t prove who hashed it. Encrypting with Bob\'s public key = confidentiality, not authentication.'
-  },
-  {
-    q: 'A certificate is discovered to have been compromised. Clients need to stop trusting it immediately. What is the most real-time way to check revocation status?',
-    choices: ['Check the CRL', 'Use OCSP', 'Download a new root CA bundle', 'Renew the certificate'],
-    correct: 1,
-    explanation: 'OCSP (Online Certificate Status Protocol) provides real-time revocation checks for a single certificate. CRL downloads the entire revocation list periodically — it can be stale between publications. OCSP Stapling further improves this by having the server cache the OCSP response.'
-  },
-  {
-    q: 'A mobile payment app needs strong asymmetric encryption but the devices have limited battery and processing power. Which algorithm is most appropriate?',
-    choices: ['RSA-4096', 'ECC (Elliptic Curve Cryptography)', '3DES', 'Diffie-Hellman only'],
-    correct: 1,
-    explanation: 'ECC provides the same security as RSA with much smaller key sizes (256-bit ECC ≈ 3072-bit RSA), using far less compute and battery. Ideal for mobile and IoT. 3DES is symmetric and legacy. DH alone is a key exchange protocol, not a complete solution.'
-  },
-  {
-    q: 'Two users have the same password "Summer2023". An attacker obtains the password database and runs a rainbow table attack. Which technique would have prevented this?',
-    choices: ['Using SHA-256 instead of MD5', 'Salting the passwords before hashing', 'Encrypting the password with AES', 'Using a digital certificate'],
-    correct: 1,
-    explanation: 'Salting adds a random value to each password before hashing. Even identical passwords produce different hashes, defeating rainbow table attacks. SHA-256 vs MD5 doesn\'t help against rainbow tables alone — it just makes the table harder to build. AES for passwords is wrong (you can\'t verify without decrypting). Certificates are unrelated.'
-  },
-  {
-    q: 'A private key is stored in a dedicated hardware device that performs cryptographic operations internally and never exposes the key in plaintext. What is this device?',
-    choices: ['TPM (Trusted Platform Module)', 'HSM (Hardware Security Module)', 'Smart card', 'USB token'],
-    correct: 1,
-    explanation: 'HSM (Hardware Security Module) is the purpose-built, high-security device for enterprise crypto operations. Keys never leave in plaintext. TPM is a chip on the motherboard for boot integrity/attestation and device-level key storage, not the same as a dedicated crypto appliance. Smart cards and USB tokens are personal devices, not enterprise-scale.'
-  },
-  {
-    q: 'An image file is sent between two parties. The receiver suspects the file might contain hidden data being used to exfiltrate information, even though it looks like a normal photo. What technique is being suspected?',
-    choices: ['Encryption', 'Steganography', 'Obfuscation via compression', 'Key escrow'],
-    correct: 1,
-    explanation: 'Steganography hides data within another file (image, audio, video) to conceal its existence. Unlike encryption, the data isn\'t scrambled — it\'s hidden. This is a covert channel technique. Encryption hides meaning, not existence.'
-  },
-  {
-    q: 'A government agency requires that all private keys used by employees can be recovered by the IT department in the event an employee leaves. What mechanism does this describe?',
-    choices: ['Public Key Infrastructure', 'Key Escrow', 'OCSP Stapling', 'Certificate Pinning'],
-    correct: 1,
-    explanation: 'Key Escrow means a copy of the private key is held by a trusted third party (or internal authority). Enables key recovery when needed. This is controversial because the escrow copy is itself a high-value target. PKI is the broader framework. OCSP Stapling is revocation. Certificate Pinning restricts which certs are trusted for a domain.'
-  },
-];
-
-const archScenarios = [
-  {
-    q: 'A hospital network has medical IoT devices (infusion pumps, MRI controllers) that cannot be patched. They run a proprietary protocol and are on the same VLAN as workstations. What is the BEST mitigation?',
-    choices: ['Deploy an IDS on the VLAN', 'Segment IoT devices onto a separate isolated VLAN', 'Encrypt all traffic on the VLAN', 'Require MFA for all IoT devices'],
-    correct: 1,
-    explanation: 'Segmentation puts unpatched IoT devices on their own isolated network segment, containing any compromise. IDS detects but doesn\'t prevent. Encrypting VLAN traffic doesn\'t isolate unpatched devices. IoT devices often can\'t support MFA.'
-  },
-  {
-    q: 'A company is moving to a zero trust model. A user\'s risk score suddenly increases because they logged in from an unfamiliar country. The system automatically requires a second authentication factor. What zero trust concept is this?',
-    choices: ['Micro-segmentation', 'Adaptive identity', 'Policy Enforcement Point', 'Software-Defined Networking'],
-    correct: 1,
-    explanation: 'Adaptive identity continuously evaluates trust signals (location, behavior, device health) and adjusts the required authentication strength dynamically. Micro-segmentation is about network traffic control. PEP enforces policy decisions. SDN is network architecture.'
-  },
-  {
-    q: 'An organization wants to detect attackers who have already bypassed the firewall and are moving laterally through the internal network. They deploy fake systems with no legitimate traffic. What is this technique?',
-    choices: ['IDS (Intrusion Detection System)', 'Honeypot', 'Sandbox', 'Vulnerability scanner'],
-    correct: 1,
-    explanation: 'A honeypot is a decoy system with no legitimate use — any connection to it is inherently suspicious. Ideal for detecting lateral movement from an attacker already inside the network. IDS monitors real traffic. A sandbox contains untrusted code. Vulnerability scanners find weaknesses, not attackers.'
-  },
-  {
-    q: 'A developer needs to run a suspicious executable to analyze its behavior. The environment must prevent the malware from affecting production systems. Which technique BEST meets this requirement?',
-    choices: ['Segmentation', 'Sandboxing / isolation', 'Hardening', 'Patching'],
-    correct: 1,
-    explanation: 'Sandboxing runs untrusted code in a contained, isolated environment where it cannot affect real systems. Segmentation controls network zones but doesn\'t isolate code execution. Hardening reduces attack surface on production systems. Patching addresses known CVEs.'
-  },
-  {
-    q: 'A company deploys an application in the cloud. The provider is responsible for the physical servers and hypervisor. The company manages the OS, application, and data. What cloud model is this?',
-    choices: ['SaaS', 'PaaS', 'IaaS', 'FaaS'],
-    correct: 2,
-    explanation: 'IaaS (Infrastructure as a Service): provider manages physical hardware and hypervisor; customer manages everything from OS up (OS, middleware, runtime, app, data). PaaS: customer manages app and data only. SaaS: customer just uses the application.'
-  },
-  {
-    q: 'An employee in the finance department can access HR records they shouldn\'t need. After a review, the company decides to restrict access based on each user\'s job role. Which access control model are they implementing?',
-    choices: ['MAC (Mandatory Access Control)', 'DAC (Discretionary Access Control)', 'RBAC (Role-Based Access Control)', 'ABAC (Attribute-Based Access Control)'],
-    correct: 2,
-    explanation: 'RBAC assigns permissions to roles (Finance, HR, IT) and users are assigned roles. A Finance employee\'s role doesn\'t include HR data. MAC uses security labels (Top Secret/Secret) — government model. DAC lets resource owners control access. ABAC uses multiple attributes but the scenario specifically describes role-based restrictions.'
-  },
-  {
-    q: 'After deploying a new server, a security admin disables Telnet, closes ports 21 and 23, removes the default guest account, and installs the latest OS patches. What is this process called?',
-    choices: ['Vulnerability scanning', 'System hardening', 'Network segmentation', 'Threat modeling'],
-    correct: 1,
-    explanation: 'System hardening reduces attack surface by disabling unnecessary services, closing unused ports, removing default accounts, and patching. Vulnerability scanning identifies weaknesses but doesn\'t fix them. Segmentation is a network control. Threat modeling is a design-phase process.'
-  },
-  {
-    q: 'A company implements a layered security approach: perimeter firewall, IDS, endpoint protection, DLP, and security awareness training. No single control is relied upon exclusively. What security principle does this describe?',
-    choices: ['Zero Trust', 'Least Privilege', 'Defense in Depth', 'Separation of Duties'],
-    correct: 2,
-    explanation: 'Defense in Depth layers multiple controls across technical, administrative, and physical categories so that if one fails, others compensate. Zero Trust is specifically about removing implicit network-location-based trust. Least privilege is about minimizing permissions. Separation of Duties divides sensitive tasks among multiple people.'
-  },
-];
-
-const allFlashcards = [
-  { q: 'What is the difference between hashing and encryption?', a: 'Hashing is ONE-WAY — you cannot reverse it. It produces a fixed-length digest for integrity verification. Encryption is TWO-WAY — data can be decrypted with the right key. Hashing = integrity. Encryption = confidentiality.', cat: 'crypto' },
-  { q: 'What three security goals does a digital signature provide?', a: 'Authentication (who sent it), Integrity (was it changed?), and Non-repudiation (sender cannot deny sending it). It does NOT inherently provide confidentiality — combine with encryption if you need that.', cat: 'crypto' },
-  { q: 'Why is ECC preferred over RSA for IoT and mobile?', a: 'ECC achieves equivalent security to RSA with dramatically smaller key sizes. 256-bit ECC ≈ 3072-bit RSA. Smaller keys = less compute = less battery = faster operations. Critical for resource-constrained devices.', cat: 'crypto' },
-  { q: 'What is the purpose of salting a password hash?', a: 'A salt is a random value added to the password before hashing. Even if two users share the same password, their hashes will differ. This defeats rainbow tables and precomputed hash attacks. Stored alongside the hash.', cat: 'crypto' },
-  { q: 'What is OCSP Stapling?', a: 'Instead of the client querying the OCSP responder directly, the server caches the OCSP response and "staples" it to the TLS handshake. Reduces load on OCSP servers, improves performance, and prevents OCSP responder downtime from breaking connections.', cat: 'crypto' },
-  { q: 'What is the difference between a Root CA and an Intermediate CA?', a: 'Root CA: self-signed, top of the trust chain, should be OFFLINE and air-gapped. Intermediate CA: signed by root, online, issues end-entity certificates. Compromise of intermediate is isolated — root remains trusted.', cat: 'crypto' },
-  { q: 'An HSM vs a TPM — what\'s the key difference?', a: 'HSM: dedicated enterprise hardware appliance for crypto operations at scale. Keys never exposed in plaintext. Used by CAs, banks, cloud providers. TPM: a chip embedded on a motherboard for device-level key storage, secure boot, and attestation — personal/workstation use.', cat: 'crypto' },
-  { q: 'What does steganography do vs encryption?', a: 'Encryption hides the MEANING of data (scrambles it). Steganography hides the EXISTENCE of data (conceals it inside a carrier file like an image). A stego\'d image looks like a normal photo. An encrypted file is obviously encrypted.', cat: 'crypto' },
-  { q: 'What is key escrow and why is it controversial?', a: 'Key escrow stores a copy of a private key with a trusted third party for recovery or lawful access. Controversial because: (1) the escrow copy is itself a high-value target and (2) government access provisions can be abused.', cat: 'crypto' },
-  { q: 'In TLS, asymmetric crypto is used first, then what happens?', a: 'Asymmetric crypto (RSA or ECDH) is used during the handshake to establish a shared secret. Then both sides derive symmetric session keys (AES) from that secret. All bulk data is encrypted with AES — asymmetric is too slow for ongoing data transfer.', cat: 'crypto' },
-  { q: 'What are the three core components of Zero Trust?', a: 'Policy Engine (PE): evaluates access decisions. Policy Administrator (PA): issues/revokes session tokens. Policy Enforcement Point (PEP): the gatekeeper that allows or blocks actual traffic. Control plane = PE + PA. Data plane = PEP.', cat: 'arch' },
-  { q: 'What is adaptive identity in zero trust?', a: 'Trust is not static. The system continuously evaluates signals (location, time, device health, behavior) and adjusts the required authentication level dynamically. Unusual login location → step-up MFA required. Risky behavior → session terminated.', cat: 'arch' },
-  { q: 'IaaS vs PaaS vs SaaS — who manages what?', a: 'IaaS: customer manages OS → app → data. Provider manages physical + hypervisor. PaaS: customer manages app + data only. Provider manages runtime + below. SaaS: customer manages nothing — just uses the app. Security responsibility shifts with each model.', cat: 'arch' },
-  { q: 'Why can\'t you just patch an ICS/SCADA system like a normal server?', a: 'ICS/SCADA systems often run proprietary or legacy OS that vendors won\'t patch, can\'t tolerate downtime (24/7 industrial ops), and patching can void vendor warranties or break certified configurations. Mitigation: network isolation, passive monitoring, unidirectional gateways.', cat: 'arch' },
-  { q: 'RBAC vs ABAC — when does the exam pick each?', a: 'RBAC: role-based (Finance role gets finance access). Common in corporate environments. Pick when scenario describes "based on job role." ABAC: attribute-based (dept=HR AND device=managed AND time=business hours). Pick when scenario describes multiple dynamic conditions.', cat: 'arch' },
-  { q: 'What is the difference between a honeypot and a sandbox?', a: 'Honeypot: a decoy system designed to detect attackers who access it — any traffic to it is suspicious. Used for threat detection. Sandbox: an isolated environment to safely execute untrusted code and observe behavior. Used for malware analysis.', cat: 'arch' },
-  { q: 'What is defense in depth?', a: 'Multiple overlapping security controls across technical, administrative, and physical layers. No single point of failure. If the firewall is bypassed, IDS detects it. If IDS misses it, EDR catches it. Redundancy of controls is the key principle.', cat: 'arch' },
-  { q: 'What is micro-segmentation?', a: 'Granular network segmentation applied to individual workloads (not just VLANs). Controls east-west traffic (within the data center), not just north-south (in/out). Used in zero trust to prevent lateral movement between workloads even on the same subnet.', cat: 'arch' },
-  { q: 'What is a DMZ and why does it exist?', a: 'Demilitarized Zone: a network segment between the internet and internal network. Public-facing servers (web, email, DNS) live here. If compromised, attackers don\'t immediately reach internal systems. Two firewalls: one internet→DMZ, one DMZ→internal.', cat: 'arch' },
-  { q: 'System hardening — what are the key steps?', a: 'Disable unnecessary services and ports. Remove default accounts / change default passwords. Apply patches and updates. Enable host-based firewall. Configure audit logging. Remove unnecessary software. Follow CIS Benchmarks for the specific OS/application.', cat: 'arch' },
-];
-
-// ===== STATE =====
-let csIdx = 0, csScore = 0;
-let asIdx = 0, asScore = 0;
-let fcIdx = 0, fcFlipped = false;
-let fcCards = [...allFlashcards];
-let dragItem = null;
-
-// ===== TAB LOGIC =====
-function showTab(id) {
+// ─── TAB LOGIC ────────────────────────────────────────────────
+function showTab(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
 }
 
-// ===== CONCEPT CARDS =====
-function buildConceptGrid(data, containerId) {
+// ─── CONCEPT GRID BUILDER ─────────────────────────────────────
+function buildGrid(data, containerId) {
   const container = document.getElementById(containerId);
-  data.forEach((item, i) => {
+  data.forEach(item => {
     const card = document.createElement('div');
     card.className = 'concept-card';
     card.innerHTML = `
       <div class="label">${item.label}</div>
       <div class="term">${item.term}</div>
       <div class="def">${item.def}</div>
-      <div class="tags">${(item.tags||[]).map(t => `<span class="tag ${t}">${t==='conf'?'Confidentiality':t==='integ'?'Integrity':t==='auth'?'Authentication':'Non-repudiation'}</span>`).join('')}</div>
+      <div class="tags">${(item.tags||[]).map(t =>
+        `<span class="tag ${t}">${{conf:'Confidentiality',integ:'Integrity',auth:'Authentication',nonrep:'Non-repudiation'}[t]||t}</span>`
+      ).join('')}</div>
     `;
     card.onclick = () => card.classList.toggle('open');
     container.appendChild(card);
   });
 }
 
-// ===== SCENARIO ENGINE =====
-function buildScenario(scenarios, boxId, counterId, scoreId, scoreNumId, pctId, idx, score) {
-  const box = document.getElementById(boxId);
-  const counter = document.getElementById(counterId);
-
-  if (idx >= scenarios.length) {
-    box.innerHTML = `<div style="font-family:var(--mono);font-size:14px;color:var(--accent);text-align:center;padding:40px 0;">All questions complete!</div>`;
-    document.getElementById(scoreId).style.display = 'flex';
-    document.getElementById(scoreNumId).textContent = score;
-    document.getElementById(pctId).textContent = Math.round(score/scenarios.length*100) + '%';
-    counter.textContent = 'Complete!';
-    return;
-  }
-
-  counter.textContent = `Question ${idx + 1} of ${scenarios.length}`;
-  const s = scenarios[idx];
-  box.innerHTML = `
-    <div class="scenario-prompt"><strong>SCENARIO:</strong> ${s.q}</div>
-    <div class="choices">${s.choices.map((c, i) => `<button class="choice-btn" data-idx="${i}" onclick="answerScenario(this, ${s.correct}, '${boxId}', '${counterId}', '${scoreId}', '${scoreNumId}', '${pctId}')">${String.fromCharCode(65+i)}. ${c}</button>`).join('')}</div>
-    <div class="feedback" id="${boxId}-feedback"></div>
-    <button class="next-btn" id="${boxId}-next" onclick="nextScenario('${boxId}', '${counterId}', '${scoreId}', '${scoreNumId}', '${pctId}')">Next Question →</button>
-  `;
-  box.dataset.correct = s.correct;
-  box.dataset.explanation = s.explanation;
-}
-
-function answerScenario(btn, correct, boxId, counterId, scoreId, scoreNumId, pctId) {
-  const box = document.getElementById(boxId);
-  const chosen = parseInt(btn.dataset.idx);
-  const isCorrect = chosen === correct;
-
-  document.querySelectorAll(`#${boxId} .choice-btn`).forEach((b, i) => {
-    b.disabled = true;
-    if (i === correct) b.classList.add('correct');
-    else if (i === chosen && !isCorrect) b.classList.add('wrong');
-  });
-
-  const fb = document.getElementById(`${boxId}-feedback`);
-  fb.className = `feedback show ${isCorrect ? 'correct' : 'wrong'}`;
-  fb.innerHTML = isCorrect
-    ? `✓ Correct! ${box.dataset.explanation}`
-    : `<strong>✗ Incorrect.</strong> The correct answer was option ${String.fromCharCode(65+correct)}. ${box.dataset.explanation}`;
-
-  document.getElementById(`${boxId}-next`).classList.add('show');
-
-  if (boxId === 'crypto-scenario-box') { if(isCorrect) csScore++; }
-  else { if(isCorrect) asScore++; }
-}
-
-function nextScenario(boxId, counterId, scoreId, scoreNumId, pctId) {
-  if (boxId === 'crypto-scenario-box') {
-    csIdx++;
-    buildScenario(cryptoScenarios, boxId, counterId, scoreId, scoreNumId, pctId, csIdx, csScore);
-  } else {
-    asIdx++;
-    buildScenario(archScenarios, boxId, counterId, scoreId, scoreNumId, pctId, asIdx, asScore);
-  }
-}
-
-// ===== DRAG & DROP 1 =====
-const dd1Items = [
-  { text: 'AES-256', cat: 'sym' },
-  { text: 'RSA-2048', cat: 'asym' },
-  { text: 'SHA-256', cat: 'hash' },
-  { text: 'ECC / ECDSA', cat: 'asym' },
-  { text: 'ChaCha20', cat: 'sym' },
-  { text: 'MD5', cat: 'hash' },
-  { text: 'Diffie-Hellman', cat: 'asym' },
-  { text: '3DES', cat: 'sym' },
-];
-
-function buildDragDrop1() {
-  const src = document.getElementById('dd-source-1');
-  src.innerHTML = '';
-  const shuffled = [...dd1Items].sort(() => Math.random() - 0.5);
-  shuffled.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'drag-item';
-    el.draggable = true;
-    el.textContent = item.text;
-    el.dataset.cat = item.cat;
-    setupDrag(el);
-    src.appendChild(el);
-  });
-  ['dz-sym','dz-asym','dz-hash'].forEach(id => {
-    const dz = document.getElementById(id);
-    dz.innerHTML = '<div class="drop-zone-label">Drop here</div>';
-    setupDrop(dz);
-  });
-  document.getElementById('dd1-feedback').className = 'feedback';
-  document.querySelectorAll('#dz-sym .drag-item, #dz-asym .drag-item, #dz-hash .drag-item').forEach(el => { el.classList.remove('correct','wrong'); });
-}
-
-function setupDrag(el) {
-  el.addEventListener('dragstart', () => { dragItem = el; el.classList.add('dragging'); });
-  el.addEventListener('dragend', () => { dragItem = null; el.classList.remove('dragging'); });
-}
-
-function setupDrop(zone) {
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('over'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('over');
-    if (dragItem) {
-      // Remove label placeholder
-      const placeholder = zone.querySelector('.drop-zone-label');
-      if (placeholder) placeholder.remove();
-      zone.appendChild(dragItem);
-      setupDrag(dragItem);
-    }
-  });
-}
-
-function checkDragDrop1() {
-  let correct = 0, total = dd1Items.length;
-  ['dz-sym','dz-asym','dz-hash'].forEach(dzId => {
-    const dz = document.getElementById(dzId);
-    dz.querySelectorAll('.drag-item').forEach(el => {
-      if (el.dataset.cat === dz.dataset.cat) { el.classList.add('correct'); correct++; }
-      else el.classList.add('wrong');
-    });
-  });
-  const fb = document.getElementById('dd1-feedback');
-  fb.className = `feedback show ${correct === total ? 'correct' : 'wrong'}`;
-  fb.innerHTML = correct === total
-    ? `✓ Perfect! All ${total} items correctly sorted.`
-    : `<strong>${correct}/${total} correct.</strong> Red items are in the wrong category. AES/3DES/ChaCha20 = Symmetric. RSA/ECC/DH = Asymmetric. SHA-256/MD5 = Hashing.`;
-}
-
-function resetDragDrop1() { buildDragDrop1(); }
-
-// ===== DRAG & DROP 2 =====
-const dd2Items = [
-  { text: 'Isolate IoT devices from workstations', cat: 'seg' },
-  { text: 'Disable Telnet, close port 23', cat: 'hard' },
-  { text: 'Finance role can\'t access HR files', cat: 'ac' },
-  { text: 'Contain OT network from corporate', cat: 'seg' },
-  { text: 'Remove default guest account', cat: 'hard' },
-  { text: 'RBAC limits admin rights', cat: 'ac' },
-];
-
-function buildDragDrop2() {
-  const src = document.getElementById('dd-source-2');
-  src.innerHTML = '';
-  const shuffled = [...dd2Items].sort(() => Math.random() - 0.5);
-  shuffled.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'drag-item';
-    el.draggable = true;
-    el.textContent = item.text;
-    el.dataset.cat = item.cat;
-    setupDrag(el);
-    src.appendChild(el);
-  });
-  ['dz-seg','dz-hard','dz-ac'].forEach(id => {
-    const dz = document.getElementById(id);
-    dz.innerHTML = '<div class="drop-zone-label">Drop here</div>';
-    setupDrop(dz);
-  });
-  document.getElementById('dd2-feedback').className = 'feedback';
-}
-
-function checkDragDrop2() {
-  let correct = 0, total = dd2Items.length;
-  ['dz-seg','dz-hard','dz-ac'].forEach(dzId => {
-    const dz = document.getElementById(dzId);
-    dz.querySelectorAll('.drag-item').forEach(el => {
-      if (el.dataset.cat === dz.dataset.cat) { el.classList.add('correct'); correct++; }
-      else el.classList.add('wrong');
-    });
-  });
-  const fb = document.getElementById('dd2-feedback');
-  fb.className = `feedback show ${correct === total ? 'correct' : 'wrong'}`;
-  fb.innerHTML = correct === total
-    ? `✓ Perfect! All techniques correctly matched.`
-    : `<strong>${correct}/${total} correct.</strong> Segmentation = isolate networks. Hardening = disable/remove defaults. Access Control = restrict permissions by role/identity.`;
-}
-
-function resetDragDrop2() { buildDragDrop2(); }
-
-// ===== FLASHCARDS =====
-function renderFlashcard() {
-  const fc = document.getElementById('flashcard');
-  fc.classList.remove('flipped');
-  fcFlipped = false;
-  setTimeout(() => {
-    document.getElementById('fc-question').textContent = fcCards[fcIdx].q;
-    document.getElementById('fc-answer').textContent = fcCards[fcIdx].a;
-    document.getElementById('fc-progress').textContent = `${fcIdx + 1} / ${fcCards.length}`;
-  }, fcFlipped ? 300 : 0);
-}
-
-function flipCard() {
-  const fc = document.getElementById('flashcard');
-  fcFlipped = !fcFlipped;
-  fc.classList.toggle('flipped', fcFlipped);
-}
-
-function nextCard() {
-  const fc = document.getElementById('flashcard');
-  fc.classList.remove('flipped');
-  fcFlipped = false;
-  setTimeout(() => {
-    fcIdx = (fcIdx + 1) % fcCards.length;
-    document.getElementById('fc-question').textContent = fcCards[fcIdx].q;
-    document.getElementById('fc-answer').textContent = fcCards[fcIdx].a;
-    document.getElementById('fc-progress').textContent = `${fcIdx + 1} / ${fcCards.length}`;
-  }, 250);
-}
-
-function prevCard() {
-  const fc = document.getElementById('flashcard');
-  fc.classList.remove('flipped');
-  fcFlipped = false;
-  setTimeout(() => {
-    fcIdx = (fcIdx - 1 + fcCards.length) % fcCards.length;
-    document.getElementById('fc-question').textContent = fcCards[fcIdx].q;
-    document.getElementById('fc-answer').textContent = fcCards[fcIdx].a;
-    document.getElementById('fc-progress').textContent = `${fcIdx + 1} / ${fcCards.length}`;
-  }, 250);
-}
-
-function filterCards(cat) {
-  document.querySelectorAll('[id^="filter-"]').forEach(b => b.style.color = 'var(--muted)');
-  document.getElementById(`filter-${cat}`).style.color = 'var(--accent)';
-  fcCards = cat === 'all' ? [...allFlashcards] : allFlashcards.filter(c => c.cat === cat);
-  fcIdx = 0;
-  renderFlashcard();
-}
-
-// ===== INIT =====
-buildConceptGrid(cryptoConcepts, 'crypto-grid');
-buildConceptGrid(archConcepts, 'arch-grid');
-buildScenario(cryptoScenarios, 'crypto-scenario-box', 'cs-counter', 'cs-score', 'cs-score-num', 'cs-pct', 0, 0);
-buildScenario(archScenarios, 'arch-scenario-box', 'as-counter', 'as-score', 'as-score-num', 'as-pct', 0, 0);
+// ─── INIT ─────────────────────────────────────────────────────
+buildGrid(window.cryptoConcepts, 'crypto-grid');
+buildGrid(window.archConcepts,   'arch-grid');
+initQuiz('crypto');
+initQuiz('arch');
 buildDragDrop1();
 buildDragDrop2();
-renderFlashcard();
+renderFC();
 </script>
 </body>
 </html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockchain Hashing — Interactive Diagram</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0c10; --surface:#12151c; --surface2:#1a1e28; --border:#252a38;
+    --accent:#00e5a0; --accent2:#7c6dfa; --accent3:#ff6b6b; --accent4:#ffd166;
+    --text:#e8eaf0; --muted:#6b7280;
+    --mono:'Space Mono',monospace; --sans:'Syne',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);padding:20px;overflow-x:hidden;}
+
+  h2{font-family:var(--sans);font-size:1.15rem;font-weight:800;margin-bottom:6px;color:var(--accent);}
+  .subtitle{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:20px;}
+
+  /* CHAIN CONTAINER */
+  .chain{display:flex;align-items:flex-start;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:12px;}
+
+  /* BLOCK */
+  .block{
+    background:var(--surface);border:1px solid var(--border);
+    width:220px;flex-shrink:0;position:relative;transition:all .3s;
+  }
+  .block.tampered{border-color:var(--accent3);box-shadow:0 0 20px rgba(255,107,107,.2);}
+  .block.invalid{border-color:var(--accent3);opacity:.7;}
+  .block.valid{border-color:var(--accent);}
+
+  .block-header{
+    background:var(--surface2);padding:10px 14px;
+    font-size:10px;letter-spacing:2px;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid var(--border);
+  }
+  .block-num{color:var(--accent);font-weight:700;}
+  .block-status{font-size:9px;padding:2px 6px;border:1px solid;}
+  .block-status.ok{color:var(--accent);border-color:var(--accent);}
+  .block-status.bad{color:var(--accent3);border-color:var(--accent3);}
+
+  .block-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+
+  .field{display:flex;flex-direction:column;gap:3px;}
+  .field-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+  .field-val{
+    font-size:10px;word-break:break-all;line-height:1.4;
+    background:var(--bg);border:1px solid var(--border);padding:6px 8px;
+    transition:all .3s;color:var(--text);
+  }
+  .field-val.hash-val{color:var(--accent2);font-size:9px;}
+  .field-val.prev-hash{color:var(--accent4);font-size:9px;}
+  .field-val.invalid-hash{color:var(--accent3)!important;border-color:var(--accent3);}
+
+  .data-input{
+    background:var(--bg);border:1px solid var(--border);
+    color:var(--text);font-family:var(--mono);font-size:10px;
+    padding:6px 8px;width:100%;resize:none;line-height:1.4;
+    transition:border-color .2s;
+  }
+  .data-input:focus{outline:none;border-color:var(--accent2);}
+  .data-input.tampered{border-color:var(--accent3);}
+
+  /* ARROW */
+  .arrow{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;flex-shrink:0;align-self:center;position:relative;
+    padding-top:30px;
+  }
+  .arrow-line{height:2px;background:var(--border);width:100%;transition:background .3s;}
+  .arrow-line.broken{background:var(--accent3);}
+  .arrow-head{
+    width:0;height:0;
+    border-top:6px solid transparent;border-bottom:6px solid transparent;
+    border-left:8px solid var(--border);flex-shrink:0;transition:border-left-color .3s;
+    position:absolute;right:-4px;
+  }
+  .arrow-head.broken{border-left-color:var(--accent3);}
+  .arrow-wrap{display:flex;align-items:center;width:36px;position:relative;}
+
+  /* LEGEND / EXPLANATION */
+  .explainer{
+    background:var(--surface);border:1px solid var(--border);
+    border-left:3px solid var(--accent2);
+    padding:16px 18px;margin-top:20px;font-size:11px;line-height:1.75;
+  }
+  .explainer h3{font-family:var(--sans);font-size:13px;color:var(--accent2);margin-bottom:8px;}
+
+  .tamper-panel{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .action-btn{
+    background:none;border:1px solid;font-family:var(--mono);
+    font-size:10px;letter-spacing:1px;padding:8px 16px;cursor:pointer;
+    text-transform:uppercase;transition:all .2s;
+  }
+  .action-btn.tamper{border-color:var(--accent3);color:var(--accent3);}
+  .action-btn.tamper:hover{background:var(--accent3);color:var(--bg);}
+  .action-btn.reset{border-color:var(--muted);color:var(--muted);}
+  .action-btn.reset:hover{background:var(--muted);color:var(--bg);}
+
+  .status-bar{
+    margin-top:16px;padding:12px 16px;font-size:11px;
+    border:1px solid var(--border);background:var(--surface2);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .status-dot.ok{background:var(--accent);}
+  .status-dot.bad{background:var(--accent3);animation:pulse .8s infinite alternate;}
+  @keyframes pulse{from{opacity:1}to{opacity:.3}}
+
+  .step-section{margin-top:20px;}
+  .step{
+    display:flex;gap:14px;margin-bottom:14px;
+    background:var(--surface);border:1px solid var(--border);padding:14px 16px;
+  }
+  .step-num{
+    flex-shrink:0;width:26px;height:26px;border-radius:50%;
+    background:var(--accent2);color:var(--bg);font-weight:700;font-size:11px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .step-body{font-size:11px;line-height:1.7;color:var(--muted);}
+  .step-body strong{color:var(--text);}
+  .step-body em{color:var(--accent4);}
+
+  /* mobile */
+  @media(max-width:600px){
+    .chain{flex-direction:column;align-items:center;}
+    .arrow{transform:rotate(90deg);width:auto;height:36px;padding-top:0;}
+  }
+</style>
+</head>
+<body>
+
+<h2>Blockchain Hashing — Interactive Demo</h2>
+<p class="subtitle">// edit block data to see how tampering breaks the chain · every change cascades forward</p>
+
+<div class="chain" id="chain-container"></div>
+
+<div class="status-bar" id="status-bar">
+  <div class="status-dot ok" id="status-dot"></div>
+  <span id="status-text">All blocks valid — chain is intact.</span>
+</div>
+
+<div class="tamper-panel">
+  <button class="action-btn tamper" onclick="tamperBlock(1)">Tamper Block 2</button>
+  <button class="action-btn reset"  onclick="resetChain()">Reset Chain</button>
+</div>
+
+<div class="explainer">
+  <h3>How Blockchain Hashing Creates Immutability</h3>
+  Each block contains the hash of its own data AND the hash of the previous block. This creates a <strong style="color:var(--accent)">cryptographic chain</strong>. If you change data in any block, its hash changes. The NEXT block stored the OLD hash — now they don't match. Every subsequent block becomes invalid.
+  <br><br>
+  <span style="color:var(--accent4)">Try it:</span> Edit the data in Block 2 above and watch the cascade.
+</div>
+
+<div class="step-section">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body"><strong>Each block hashes its own content.</strong> The data field (transactions, records, etc.) is run through SHA-256 to produce a fixed-length digest. Any change to the data, no matter how small, produces a completely different hash.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body"><strong>Each block stores the previous block's hash.</strong> This is the <em>"previous hash"</em> field. It's how the chain is formed — each block cryptographically references the one before it.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body"><strong>Changing data in Block N invalidates Block N+1.</strong> Block N's hash changes → Block N+1's "previous hash" no longer matches → Block N+1's own hash changes → Block N+2 is now invalid → cascade.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body"><strong>In a distributed network, tampering is detectable.</strong> Every node holds a copy of the chain. A tampered chain won't match the majority — the network rejects it. An attacker would need to recompute ALL subsequent blocks AND control >50% of the network simultaneously.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body"><strong>Exam takeaway:</strong> <em>Blockchain uses hashing for integrity, not confidentiality.</em> SHA-256 (or similar) is the hash function. The immutability comes from the chained hash structure, not encryption. This is why the SEC+ exam links blockchain to the hashing domain.</div>
+  </div>
+</div>
+
+<script>
+// ─── SIMPLE HASH (FNV-1a inspired, produces hex-looking output) ───
+// Not SHA-256 (can't run server-side in an iframe) but deterministic
+// and visually convincing for demo purposes.
+function simHash(str) {
+  let h = 0xcbf29ce484222325n;
+  const prime = 0x100000001b3n;
+  for (let i = 0; i < str.length; i++) {
+    h ^= BigInt(str.charCodeAt(i));
+    h = (h * prime) & 0xffffffffffffffffn;
+  }
+  // produce a 64-char looking hex string by repeating + mixing
+  let base = h.toString(16).padStart(16, '0');
+  let full = '';
+  for (let i = 0; i < 4; i++) {
+    h = (h * prime + BigInt(i * 31337)) & 0xffffffffffffffffn;
+    full += h.toString(16).padStart(16, '0');
+  }
+  return full;
+}
+
+// ─── CHAIN DATA ───────────────────────────────────────────────
+const GENESIS_PREV = '0000000000000000000000000000000000000000000000000000000000000000';
+
+const initialData = [
+  'Genesis Block — Chain Origin',
+  'Alice → Bob: 1.5 BTC\nBob → Carol: 0.5 BTC',
+  'Carol → Dave: 0.3 BTC\nEve → Alice: 2.0 BTC',
+  'Dave → Frank: 0.1 BTC\nFrank → Eve: 1.0 BTC',
+];
+
+let chainData = [...initialData];
+
+function computeChain(data) {
+  const blocks = [];
+  for (let i = 0; i < data.length; i++) {
+    const prevHash = i === 0 ? GENESIS_PREV : blocks[i-1].hash;
+    const raw = `BLOCK${i}|${prevHash}|${data[i]}`;
+    const hash = simHash(raw);
+    blocks.push({ idx: i, data: data[i], prevHash, hash });
+  }
+  return blocks;
+}
+
+function validateChain(blocks) {
+  const valid = [];
+  valid[0] = true; // genesis always "starts" valid
+  for (let i = 1; i < blocks.length; i++) {
+    // check if this block's prevHash matches the previous block's actual hash
+    const expectedPrev = blocks[i-1].hash;
+    valid[i] = blocks[i].prevHash === expectedPrev;
+  }
+  return valid;
+}
+
+function shortHash(h) { return h.slice(0, 8) + '…' + h.slice(-4); }
+
+function renderChain(tampered = -1) {
+  const blocks    = computeChain(chainData);
+  const validity  = validateChain(blocks);
+  const container = document.getElementById('chain-container');
+  container.innerHTML = '';
+
+  // Are all blocks valid?
+  const allValid = validity.every(v => v);
+  const dot  = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className  = 'status-dot ' + (allValid ? 'ok' : 'bad');
+  text.textContent = allValid
+    ? 'All blocks valid — chain is intact.'
+    : `⚠ Chain broken from Block ${validity.findIndex(v => !v) + 1} onward — tampering detected!`;
+
+  blocks.forEach((b, i) => {
+    const isTampered = i === tampered;
+    const isValid    = validity[i];
+
+    // BLOCK element
+    const blockEl = document.createElement('div');
+    blockEl.className = `block ${isTampered ? 'tampered' : ''} ${isValid ? 'valid' : 'invalid'}`;
+
+    blockEl.innerHTML = `
+      <div class="block-header">
+        <span class="block-num">${i === 0 ? 'GENESIS' : `BLOCK ${i}`}</span>
+        <span class="block-status ${isValid ? 'ok' : 'bad'}">${isValid ? '✓ VALID' : '✗ INVALID'}</span>
+      </div>
+      <div class="block-body">
+        <div class="field">
+          <div class="field-label">Previous Hash</div>
+          <div class="field-val prev-hash ${!isValid ? 'invalid-hash' : ''}" title="${b.prevHash}">
+            ${i === 0 ? '0000…0000 (genesis)' : shortHash(b.prevHash)}
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Data ${i === 0 ? '(read-only)' : '(editable)'}</div>
+          ${i === 0
+            ? `<div class="field-val">${b.data}</div>`
+            : `<textarea class="data-input ${isTampered ? 'tampered' : ''}" rows="2" data-idx="${i}">${b.data}</textarea>`
+          }
+        </div>
+        <div class="field">
+          <div class="field-label">Block Hash (SHA-256)</div>
+          <div class="field-val hash-val" title="${b.hash}">${shortHash(b.hash)}</div>
+        </div>
+      </div>
+    `;
+    container.appendChild(blockEl);
+
+    // Add arrow between blocks
+    if (i < blocks.length - 1) {
+      const nextValid = validity[i + 1];
+      const arrowWrap = document.createElement('div');
+      arrowWrap.className = 'arrow';
+      arrowWrap.innerHTML = `
+        <div style="display:flex;align-items:center;width:36px;position:relative;">
+          <div class="arrow-line ${!nextValid ? 'broken' : ''}"></div>
+          <div class="arrow-head ${!nextValid ? 'broken' : ''}"></div>
+        </div>
+      `;
+      container.appendChild(arrowWrap);
+    }
+  });
+
+  // Wire up data-input listeners for live updates
+  document.querySelectorAll('.data-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.dataset.idx);
+      chainData[idx] = inp.value;
+      // re-render without clearing cursor
+      refreshChain(idx);
+    });
+  });
+}
+
+function refreshChain(changedIdx) {
+  const blocks   = computeChain(chainData);
+  const validity = validateChain(blocks);
+
+  // Update hashes and validity display without full re-render
+  // (preserves textarea cursor position)
+  blocks.forEach((b, i) => {
+    const blockEls = document.querySelectorAll('.block');
+    if (!blockEls[i]) return;
+    const blockEl = blockEls[i];
+
+    blockEl.className = `block ${i === changedIdx ? 'tampered' : ''} ${validity[i] ? 'valid' : 'invalid'}`;
+
+    const prevHashEl = blockEl.querySelector('.prev-hash');
+    if (prevHashEl) {
+      prevHashEl.textContent = i === 0 ? '0000…0000 (genesis)' : shortHash(b.prevHash);
+      prevHashEl.className   = `field-val prev-hash ${!validity[i] ? 'invalid-hash' : ''}`;
+    }
+
+    const hashEl = blockEl.querySelector('.hash-val');
+    if (hashEl) hashEl.textContent = shortHash(b.hash);
+
+    const statusEl = blockEl.querySelector('.block-status');
+    if (statusEl) {
+      statusEl.className   = `block-status ${validity[i] ? 'ok' : 'bad'}`;
+      statusEl.textContent = validity[i] ? '✓ VALID' : '✗ INVALID';
+    }
+
+    const dataInp = blockEl.querySelector('.data-input');
+    if (dataInp) dataInp.className = `data-input ${i === changedIdx ? 'tampered' : ''}`;
+  });
+
+  // Update arrows
+  document.querySelectorAll('.arrow-line').forEach((line, i) => {
+    const nextValid = validity[i + 1];
+    line.className = `arrow-line ${!nextValid ? 'broken' : ''}`;
+    line.nextElementSibling.className = `arrow-head ${!nextValid ? 'broken' : ''}`;
+  });
+
+  // Status bar
+  const allValid = validity.every(v => v);
+  document.getElementById('status-dot').className  = 'status-dot ' + (allValid ? 'ok' : 'bad');
+  document.getElementById('status-text').textContent = allValid
+    ? 'All blocks valid — chain is intact.'
+    : `⚠ Chain broken from Block ${validity.findIndex(v => !v) + 1} onward — tampering detected!`;
+}
+
+function tamperBlock(idx) {
+  chainData[idx] = 'HACKED: Alice → Attacker: 10 BTC\n(unauthorized transfer)';
+  renderChain(idx);
+}
+
+function resetChain() {
+  chainData = [...initialData];
+  renderChain();
+}
+
+// Init
+renderChain();
+</script>
+</body>
+</html>

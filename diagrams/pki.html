@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PKI Chain of Trust</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:20px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--accent4);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:18px;}
+  svg{width:100%;height:auto;display:block;}
+  .cert-node{cursor:pointer;}
+  .cert-node rect{transition:all .2s;}
+  .cert-node:hover rect{filter:brightness(1.3);}
+  .tooltip{position:fixed;background:var(--surface2);border:1px solid var(--border);padding:12px 16px;font-size:11px;line-height:1.65;max-width:260px;pointer-events:none;display:none;z-index:99;color:var(--text);border-left:3px solid var(--accent4);}
+  .tooltip strong{color:var(--accent4);}
+</style>
+</head>
+<body>
+<h2>PKI — Chain of Trust</h2>
+<p class="sub">// hover each component for details · trust flows downward</p>
+
+<svg viewBox="0 0 740 420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#252a38"/>
+    </marker>
+    <marker id="arr-gold" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#ffd166"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#7c6dfa"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#00e5a0"/>
+    </marker>
+  </defs>
+
+  <!-- ── ROOT CA (OFFLINE) ── -->
+  <g class="cert-node" id="node-root"
+     data-tip="<strong>Root CA (Offline)</strong><br>Self-signed certificate — the top of the trust hierarchy. Must be kept OFFLINE / air-gapped. If compromised, every certificate in the entire PKI is untrusted. Only signs intermediate CA certificates, very rarely. Trust browsers pre-install Root CA public keys.">
+    <rect x="240" y="20" width="260" height="72" rx="3" fill="#12151c" stroke="#ffd166" stroke-width="2"/>
+    <rect x="240" y="20" width="260" height="24" rx="3" fill="#1a1e0a" stroke="none"/>
+    <text x="370" y="36" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#ffd166" letter-spacing="2">ROOT CA — OFFLINE / AIR-GAPPED</text>
+    <text x="370" y="56" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#e8eaf0">Self-signed · Trust Anchor</text>
+    <text x="370" y="70" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Cert: signs itself with own private key</text>
+    <text x="370" y="83" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">⚠ Compromise = entire PKI destroyed</text>
+  </g>
+
+  <!-- ROOT → INTERMEDIATE arrows -->
+  <line x1="300" y1="92" x2="180" y2="152" stroke="#ffd166" stroke-width="1.5" marker-end="url(#arr-gold)"/>
+  <line x1="370" y1="92" x2="370" y2="152" stroke="#ffd166" stroke-width="1.5" marker-end="url(#arr-gold)"/>
+  <line x1="440" y1="92" x2="560" y2="152" stroke="#ffd166" stroke-width="1.5" marker-end="url(#arr-gold)"/>
+
+  <text x="280" y="130" font-family="Space Mono" font-size="7" fill="#ffd166" text-anchor="middle">Signs</text>
+
+  <!-- ── INTERMEDIATE CAs ── -->
+  <!-- Left -->
+  <g class="cert-node" id="node-int1"
+     data-tip="<strong>Intermediate CA</strong><br>Signed by the Root CA. Online — actively issues end-entity certificates. If an Intermediate CA is compromised, only its sub-certificates are affected. The Root CA remains trusted and can revoke the Intermediate. This isolation is WHY we use intermediates.">
+    <rect x="80" y="152" width="200" height="65" rx="3" fill="#12151c" stroke="#7c6dfa" stroke-width="1.5"/>
+    <text x="180" y="172" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#7c6dfa" letter-spacing="1">INTERMEDIATE CA</text>
+    <text x="180" y="186" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Signed by Root CA</text>
+    <text x="180" y="198" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Online · Issues end-entity certs</text>
+    <text x="180" y="210" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">e.g. "Issuing CA for Web Services"</text>
+  </g>
+
+  <!-- Middle -->
+  <g class="cert-node" id="node-int2"
+     data-tip="<strong>Intermediate CA</strong><br>A second intermediate CA — an organization may have several for different purposes (email, web, code signing). Each is signed by the Root CA. Having separate intermediates limits the blast radius of any single compromise.">
+    <rect x="270" y="152" width="200" height="65" rx="3" fill="#12151c" stroke="#7c6dfa" stroke-width="1.5"/>
+    <text x="370" y="172" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#7c6dfa" letter-spacing="1">INTERMEDIATE CA</text>
+    <text x="370" y="186" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Signed by Root CA</text>
+    <text x="370" y="198" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Online · Issues end-entity certs</text>
+    <text x="370" y="210" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">e.g. "Issuing CA for Email"</text>
+  </g>
+
+  <!-- Right -->
+  <g class="cert-node" id="node-int3"
+     data-tip="<strong>Intermediate CA</strong><br>Third intermediate CA — perhaps for code signing certificates. The trust chain: client receives end-entity cert → checks it was signed by this Intermediate → checks the Intermediate was signed by Root → Root is in the trust store → TRUSTED.">
+    <rect x="460" y="152" width="200" height="65" rx="3" fill="#12151c" stroke="#7c6dfa" stroke-width="1.5"/>
+    <text x="560" y="172" text-anchor="middle" font-family="Space Mono" font-size="9" fill="#7c6dfa" letter-spacing="1">INTERMEDIATE CA</text>
+    <text x="560" y="186" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Signed by Root CA</text>
+    <text x="560" y="198" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Online · Issues end-entity certs</text>
+    <text x="560" y="210" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">e.g. "Issuing CA for Code Signing"</text>
+  </g>
+
+  <!-- Int → End-entity arrows -->
+  <line x1="140" y1="217" x2="100" y2="290" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <line x1="200" y1="217" x2="220" y2="290" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <line x1="330" y1="217" x2="330" y2="290" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <line x1="410" y1="217" x2="430" y2="290" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <line x1="530" y1="217" x2="530" y2="290" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <line x1="590" y1="217" x2="630" y2="290" stroke="#7c6dfa" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+  <text x="170" y="262" font-family="Space Mono" font-size="7" fill="#7c6dfa" text-anchor="middle">Issues</text>
+
+  <!-- ── END-ENTITY CERTS ── -->
+  <!-- Web server cert -->
+  <g class="cert-node" id="node-web"
+     data-tip="<strong>End-Entity Certificate (TLS/Web)</strong><br>Issued to a specific server (e.g. api.example.com). Contains: subject, SAN (Subject Alternative Names), public key, validity period, key usage. The server presents this during TLS handshake. Client verifies the chain: cert → intermediate → root.">
+    <rect x="50" y="290" width="150" height="55" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="125" y="308" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">TLS CERT</text>
+    <text x="125" y="320" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">api.example.com</text>
+    <text x="125" y="332" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Web server identity</text>
+    <text x="125" y="340" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">validity: 90 days</text>
+  </g>
+
+  <!-- Email cert -->
+  <g class="cert-node" id="node-email"
+     data-tip="<strong>End-Entity Certificate (S/MIME Email)</strong><br>Issued to an email address (user@company.com). Used to sign and/or encrypt emails. S/MIME certificates verify the sender's identity and ensure the email hasn't been tampered with in transit.">
+    <rect x="210" y="290" width="150" height="55" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="285" y="308" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">S/MIME CERT</text>
+    <text x="285" y="320" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">user@company.com</text>
+    <text x="285" y="332" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Email signing/encrypt</text>
+    <text x="285" y="340" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">validity: 1 year</text>
+  </g>
+
+  <!-- Client cert -->
+  <g class="cert-node" id="node-client"
+     data-tip="<strong>End-Entity Certificate (Client Auth)</strong><br>Issued to a user or device for mutual TLS (mTLS). The client presents this certificate to the server to prove its identity. Used in Zero Trust architectures where service-to-service calls require both sides to authenticate with certificates.">
+    <rect x="375" y="290" width="150" height="55" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="450" y="308" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">CLIENT CERT</text>
+    <text x="450" y="320" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Device / User auth</text>
+    <text x="450" y="332" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">mTLS / Zero Trust</text>
+    <text x="450" y="340" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">validity: 1 year</text>
+  </g>
+
+  <!-- Code signing cert -->
+  <g class="cert-node" id="node-code"
+     data-tip="<strong>End-Entity Certificate (Code Signing)</strong><br>Issued to a software publisher (Microsoft, Adobe, your org). Used to digitally sign executables and scripts. The OS verifies the signature before running — if the signature is valid, the code hasn't been tampered with since signing.">
+    <rect x="540" y="290" width="155" height="55" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="617" y="308" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">CODE SIGNING</text>
+    <text x="617" y="320" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Publisher: Corp Inc.</text>
+    <text x="617" y="332" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Verifies software source</text>
+    <text x="617" y="340" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">validity: 3 years</text>
+  </g>
+
+  <!-- REVOCATION sidebar -->
+  <g>
+    <rect x="4" y="20" width="70" height="80" rx="3" fill="#1a0a0a" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="3,2"/>
+    <text x="39" y="38" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#ff6b6b" letter-spacing="1">REVOCATION</text>
+    <text x="39" y="52" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">CRL: list</text>
+    <text x="39" y="62" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">periodic</text>
+    <text x="39" y="74" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">OCSP: live</text>
+    <text x="39" y="84" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">per-cert</text>
+    <text x="39" y="94" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#ffd166">Stapling:</text>
+    <text x="39" y="104" text-anchor="middle" font-family="Space Mono" font-size="6.5" fill="#ffd166">cached</text>
+  </g>
+
+  <!-- TRUST CHAIN label -->
+  <text x="700" y="100" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280" transform="rotate(90,700,100)">TRUST FLOWS DOWNWARD ↓</text>
+
+  <!-- Verification path annotation -->
+  <g>
+    <rect x="4" y="360" width="730" height="50" rx="3" fill="#12151c" stroke="#252a38" stroke-width="1"/>
+    <text x="370" y="378" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd166" letter-spacing="1">CERTIFICATE CHAIN VERIFICATION (how a browser/client validates trust)</text>
+    <text x="370" y="395" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">Receive end-entity cert → Signed by Intermediate? → Intermediate signed by Root? → Root in trust store? → VALID ✓</text>
+  </g>
+</svg>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const tooltip = document.getElementById('tooltip');
+document.querySelectorAll('.cert-node').forEach(node => {
+  node.addEventListener('mouseenter', e => {
+    tooltip.innerHTML = node.dataset.tip || '';
+    tooltip.style.display = 'block';
+  });
+  node.addEventListener('mousemove', e => {
+    const x = e.clientX + 14, y = e.clientY + 14;
+    const right = x + 270 > window.innerWidth;
+    tooltip.style.left = (right ? e.clientX - 274 : x) + 'px';
+    tooltip.style.top  = y + 'px';
+  });
+  node.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+});
+</script>
+</body>
+</html>
