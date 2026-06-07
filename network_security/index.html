@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEC+ SY0-701 · Module 4 · Network Security</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="module-nav-strip">
+    <span class="mnav-label">Module:</span>
+    <a class="module-pill" href="../crypto_and_architecture/index.html"><span class="mpill-num">01</span> Crypto</a>
+    <a class="module-pill" href="../threats_attacks_vuln/index.html"><span class="mpill-num">02</span> Threats</a>
+    <a class="module-pill" href="../identity_access/index.html"><span class="mpill-num">03</span> Identity</a>
+    <a class="module-pill current" href="../network_security/index.html"><span class="mpill-num">04</span> Network Security</a>
+    <a class="module-pill" href="../governance_risk_compliance/index.html"><span class="mpill-num">05</span> GRC</a>
+    <span style="margin-left:auto;color:var(--muted);font-size:10px;">SY0-701 Study Lab</span>
+  </div>
+  <header>
+    <div class="badge">Module 04 · CompTIA Security+ SY0-701</div>
+    <h1>Network Security &<br><span>Infrastructure</span></h1>
+    <p>// firewalls · DMZ · VPN · wireless · IDS/IPS · NAC · ports · ZTNA</p>
+  </header>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="showTab('concepts',this)">Concepts</button>
+    <button class="tab-btn" onclick="showTab('quiz',this)">Quiz</button>
+    <button class="tab-btn" onclick="showTab('diagrams',this)">Diagrams</button>
+    <button class="tab-btn" onclick="showTab('drag-drop',this)">Match-Up Lab</button>
+    <button class="tab-btn" onclick="showTab('flashcards',this)">Flashcards</button>
+    <button class="tab-btn" onclick="showTab('reference',this)">Quick Reference</button>
+  </nav>
+
+  <div class="section active" id="concepts">
+    <div class="section-header"><h2>Network Security & Infrastructure</h2><p>// click any card to reveal</p></div>
+    <div class="callout yellow"><strong>Core exam pattern:</strong> Network questions give a scenario (need to block application-layer attacks / isolate IoT / allow individual user auth on Wi-Fi) and ask which specific control fits. Know stateless vs stateful vs NGFW. Know DMZ purpose. Know the difference between WPA2-Personal and Enterprise.</div>
+    <div class="concept-grid" id="concept-grid"></div>
+  </div>
+
+  <div class="section" id="quiz">
+    <div class="section-header"><h2>Network Security Quiz</h2><p>// 8 random questions from a bank of 24 · full per-choice explanations</p></div>
+    <div class="quiz-header"><span class="quiz-counter" id="mq-counter">Question 1 of 8</span><span class="quiz-score-live" id="mq-score-live">Score: 0/0</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="mq-progress" style="width:0%"></div></div>
+    <div id="mq-box"></div>
+  </div>
+
+  <div class="section" id="diagrams">
+    <div class="section-header"><h2>Interactive Diagrams</h2></div>
+    <div class="card">
+      <div class="card-title">Network Security Architecture — DMZ + Defense in Depth</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;">Tap each component to understand its role. Notice the two-firewall DMZ design — even a compromised web server can't reach the internal database directly.</p>
+      <div class="callout yellow"><strong>Key insight:</strong> The DMZ doesn't prevent web server compromise — it LIMITS the blast radius. The internal firewall is what actually protects the database. That's defense in depth: multiple independent security boundaries.</div>
+      <iframe class="diagram-frame" src="diagrams/topology.html" title="Network architecture" style="height:620px;"></iframe>
+    </div>
+    <div class="card">
+      <div class="card-title">Wireless Security Standards & Attacks</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;">Compare WEP through WPA3, with security/privacy/accountability ratings. Bottom section covers wireless attack types.</p>
+      <div class="callout yellow"><strong>Exam tip:</strong> WPA2-Enterprise (802.1X + RADIUS) is the correct answer for any organization wireless scenario. WPA3-SAE fixes offline dictionary attacks. WEP is always wrong. Management Frame Protection in WPA3 fixes deauthentication attacks.</div>
+      <iframe class="diagram-frame" src="diagrams/wireless.html" title="Wireless security" style="height:740px;"></iframe>
+    </div>
+  </div>
+
+  <div class="section" id="drag-drop">
+    <div class="section-header"><h2>Match-Up Lab</h2></div>
+    <div class="card">
+      <div class="card-title">Round 1 · Secure vs Insecure Protocols</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">Sort each protocol into the correct security category.</p>
+      <div class="drag-area">
+        <div class="drag-col"><h4>Protocols</h4><div class="drag-items" id="dd-source-1"></div></div>
+        <div class="drag-col"><h4>Classification</h4>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent3);margin-bottom:5px;">INSECURE (cleartext)</div><div class="drop-zone" id="dz-sym" data-cat="insecure"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:5px;">SECURE (encrypted)</div><div class="drop-zone" id="dz-asym" data-cat="secure"><div class="drop-zone-label">Drop here</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="check-btn" onclick="checkDragDrop1()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop1()">Shuffle & Reset</button>
+      <div class="feedback" id="dd1-feedback"></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Round 2 · Network Security Control Matching</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">Match each description to the correct network security control category.</p>
+      <div class="drag-area">
+        <div class="drag-col"><h4>Descriptions</h4><div class="drag-items" id="dd-source-2"></div></div>
+        <div class="drag-col"><h4>Control Category</h4>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:5px;">FILTERING / MONITORING</div><div class="drop-zone" id="dz-seg" data-cat="seg"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent3);margin-bottom:5px;">DETECTION / PREVENTION</div><div class="drop-zone" id="dz-hard" data-cat="hard"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:5px;">ACCESS CONTROL</div><div class="drop-zone" id="dz-ac" data-cat="ac"><div class="drop-zone-label">Drop here</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="check-btn" onclick="checkDragDrop2()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop2()" style="margin-left:10px;">Shuffle & Reset</button>
+      <div class="feedback" id="dd2-feedback"></div>
+    </div>
+  </div>
+
+  <div class="section" id="flashcards">
+    <div class="section-header"><h2>Flashcards</h2></div>
+    <div class="flashcard-wrap"><div class="flashcard" id="flashcard" onclick="flipCard()"><div class="card-face card-front"><div class="hint">Click to reveal</div><div class="q" id="fc-question"></div></div><div class="card-face card-back"><div class="a" id="fc-answer"></div></div></div></div>
+    <div class="card-nav"><button onclick="prevCard()">&#8592;</button><div class="card-progress" id="fc-progress">1 / 15</div><button onclick="nextCard()">&#8594;</button></div>
+    <div style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      Filter: <button class="fc-filter-btn active" id="filter-all" onclick="filterCards('all')">All</button>
+      <button class="fc-filter-btn" id="filter-firewall" onclick="filterCards('firewall')">Firewalls</button>
+      <button class="fc-filter-btn" id="filter-vpn" onclick="filterCards('vpn')">VPN</button>
+      <button class="fc-filter-btn" id="filter-wireless" onclick="filterCards('wireless')">Wireless</button>
+      <button class="fc-filter-btn" id="filter-network" onclick="filterCards('network')">Network Controls</button>
+      <button class="fc-filter-btn" id="filter-protocols" onclick="filterCards('protocols')">Protocols/Ports</button>
+      <span style="margin-left:8px;">|</span>
+      <button class="fc-filter-btn" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <div class="section" id="reference">
+    <div class="section-header"><h2>Quick Reference</h2></div>
+    <div class="card"><div class="card-title">Key Ports — Memorize These</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:12%"><col style="width:18%"><col style="width:30%"><col style="width:40%"></colgroup>
+        <tr><th>Port</th><th>Protocol</th><th>Service</th><th>Notes</th></tr>
+        <tr><td>21/20</td><td>TCP</td><td>FTP</td><td>Cleartext. Use SFTP (port 22) instead.</td></tr>
+        <tr><td>22</td><td>TCP</td><td>SSH / SFTP / SCP</td><td>Encrypted remote access and file transfer.</td></tr>
+        <tr><td>23</td><td>TCP</td><td>Telnet</td><td>Cleartext. Always replaced by SSH.</td></tr>
+        <tr><td>25</td><td>TCP</td><td>SMTP</td><td>Mail transfer. Also 465 (SMTPS), 587 (submission).</td></tr>
+        <tr><td>53</td><td>UDP/TCP</td><td>DNS</td><td>UDP for queries, TCP for zone transfers.</td></tr>
+        <tr><td>80</td><td>TCP</td><td>HTTP</td><td>Cleartext web. Always redirect to 443.</td></tr>
+        <tr><td>389</td><td>TCP</td><td>LDAP</td><td>Cleartext directory. Use LDAPS (636).</td></tr>
+        <tr><td>443</td><td>TCP</td><td>HTTPS</td><td>TLS-encrypted web. Standard secure web.</td></tr>
+        <tr><td>445</td><td>TCP</td><td>SMB</td><td>Windows file sharing. High-value attack target.</td></tr>
+        <tr><td>636</td><td>TCP</td><td>LDAPS</td><td>LDAP over TLS. Use this, not port 389.</td></tr>
+        <tr><td>853</td><td>TCP</td><td>DNS over TLS</td><td>Encrypted DNS queries.</td></tr>
+        <tr><td>3389</td><td>TCP</td><td>RDP</td><td>Remote Desktop. Frequently targeted — require NLA + MFA.</td></tr>
+      </table>
+    </div>
+    <div class="card"><div class="card-title">Scenario Decision Guide — Network</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+        <tr><th>Scenario says...</th><th>Answer</th></tr>
+        <tr><td>Block SQL injection at application layer</td><td>WAF (Web Application Firewall) / NGFW</td></tr>
+        <tr><td>Monitor-only, no blocking</td><td>IDS (not IPS)</td></tr>
+        <tr><td>Inline blocking of detected threats</td><td>IPS (not IDS)</td></tr>
+        <tr><td>Public server isolated from internal network</td><td>DMZ / Screened subnet</td></tr>
+        <tr><td>Individual Wi-Fi accountability, per-user auth</td><td>WPA2/3-Enterprise (802.1X + RADIUS)</td></tr>
+        <tr><td>Wi-Fi handshake can't be cracked offline</td><td>WPA3-Personal (SAE/DRAGONFLY)</td></tr>
+        <tr><td>Remote access only to specific app, not whole network</td><td>ZTNA / SDP</td></tr>
+        <tr><td>Device health check before network admission</td><td>NAC (802.1X posture assessment)</td></tr>
+        <tr><td>Verify DNS records not tampered with</td><td>DNSSEC</td></tr>
+        <tr><td>Hide DNS queries from ISP</td><td>DoH or DoT</td></tr>
+        <tr><td>All traffic through VPN, including personal</td><td>Full tunnel VPN</td></tr>
+        <tr><td>Only corporate traffic through VPN</td><td>Split tunneling</td></tr>
+        <tr><td>Site-to-site VPN with encryption AND auth</td><td>IPSec ESP in Tunnel mode</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>Module 04 · <a href="../governance_risk_compliance/index.html" style="color:var(--accent4);text-decoration:none;">→ Next: Governance, Risk & Compliance</a></footer>
+</div>
+<script src="js/network.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/flashcards.js"></script>
+<script src="js/dragdrop.js"></script>
+<script>
+function showTab(id,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');if(btn)btn.classList.add('active');}
+function buildGrid(data,cid){const c=document.getElementById(cid);data.forEach(item=>{const d=document.createElement('div');d.className='concept-card';d.innerHTML=`<div class="label">${item.label}</div><div class="term">${item.term}</div><div class="def">${item.def}</div><div class="tags">${(item.tags||[]).map(t=>`<span class="tag ${t}">${{conf:'Confidentiality',integ:'Integrity',auth:'Authentication',avail:'Availability'}[t]||t}</span>`).join('')}</div>`;d.onclick=()=>d.classList.toggle('open');c.appendChild(d);});}
+buildGrid(window.moduleConcepts,'concept-grid');
+initQuiz('mod');
+buildDragDrop1();buildDragDrop2();
+renderFC();
+</script>
+</body>
+</html>

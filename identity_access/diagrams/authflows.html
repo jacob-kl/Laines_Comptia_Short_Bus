@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Authentication Flow Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent2);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:16px;}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .tab-btn{background:none;border:1px solid var(--border);color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;padding:6px 14px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .2s;}
+  .tab-btn.active,.tab-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+  .flow{display:none;} .flow.active{display:block;}
+  .step-row{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;}
+  .step-actor{min-width:90px;font-size:9px;text-transform:uppercase;letter-spacing:1px;padding:6px 8px;text-align:center;border:1px solid;flex-shrink:0;}
+  .step-msg{flex:1;font-size:10px;line-height:1.5;padding:6px 10px;background:var(--surface);border:1px solid var(--border);}
+  .step-msg strong{color:var(--accent4);}
+  .arrow-down{text-align:left;padding-left:45px;color:var(--border);font-size:12px;margin-bottom:0;}
+  .callout{background:rgba(0,229,160,.05);border:1px solid rgba(0,229,160,.2);border-left:3px solid var(--accent);padding:12px 16px;margin-top:14px;font-size:11px;line-height:1.7;}
+  .callout.red{background:rgba(255,107,107,.05);border-color:rgba(255,107,107,.2);border-left-color:var(--accent3);}
+  .callout.purple{background:rgba(124,109,250,.05);border-color:rgba(124,109,250,.2);border-left-color:var(--accent2);}
+  .callout strong{color:var(--accent);}
+  .callout.red strong{color:var(--accent3);}
+  .callout.purple strong{color:var(--accent2);}
+  .factor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .factor-card{background:var(--surface);border:1px solid var(--border);border-top:2px solid;padding:12px;cursor:pointer;transition:all .2s;}
+  .factor-card:hover,.factor-card.active{background:var(--surface2);}
+  .factor-name{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .factor-examples{font-size:9px;color:var(--muted);line-height:1.6;}
+  .info-panel{margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent2);padding:14px 16px;font-size:11px;line-height:1.7;min-height:48px;}
+  .info-panel .hint{color:var(--muted);font-size:10px;font-style:italic;}
+  .strength-bar{height:6px;border-radius:3px;margin-top:6px;background:var(--border);}
+  .strength-fill{height:100%;border-radius:3px;}
+</style>
+</head>
+<body>
+<h2>Authentication Flows & MFA Factors</h2>
+<p class="sub">// tap tabs to see authentication protocol flows · tap factor cards for details</p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showFlow('factors',this)">MFA Factor Types</button>
+  <button class="tab-btn" onclick="showFlow('saml',this)">SAML 2.0 SSO Flow</button>
+  <button class="tab-btn" onclick="showFlow('kerberos',this)">Kerberos Flow</button>
+  <button class="tab-btn" onclick="showFlow('oidc',this)">OIDC / OAuth Flow</button>
+</div>
+
+<!-- FACTORS TAB -->
+<div class="flow active" id="flow-factors">
+  <div class="factor-grid">
+    <div class="factor-card" style="border-top-color:#7c6dfa;" onclick="showFactor('know')">
+      <div class="factor-name" style="color:#7c6dfa;">Something You Know</div>
+      <div class="factor-examples">Password · PIN · Security question · Passphrase</div>
+      <div class="strength-bar"><div class="strength-fill" style="width:35%;background:#7c6dfa;"></div></div>
+    </div>
+    <div class="factor-card" style="border-top-color:#ffd166;" onclick="showFactor('have')">
+      <div class="factor-name" style="color:#ffd166;">Something You Have</div>
+      <div class="factor-examples">TOTP app · Hardware token (YubiKey) · Smart card · Phone (push)</div>
+      <div class="strength-bar"><div class="strength-fill" style="width:65%;background:#ffd166;"></div></div>
+    </div>
+    <div class="factor-card" style="border-top-color:#00e5a0;" onclick="showFactor('are')">
+      <div class="factor-name" style="color:#00e5a0;">Something You Are</div>
+      <div class="factor-examples">Fingerprint · Iris scan · Face ID · Voice print</div>
+      <div class="strength-bar"><div class="strength-fill" style="width:85%;background:#00e5a0;"></div></div>
+    </div>
+  </div>
+  <div class="info-panel" id="factor-panel"><div class="hint">Tap a factor category above for details →</div></div>
+  <div class="callout" style="margin-top:14px;">
+    <strong>Exam rule:</strong> MFA requires TWO DIFFERENT categories. Password + security question = NOT MFA (both "know"). Password + TOTP = MFA. SMS OTP = weakest "have" (SIM swap). FIDO2/passkeys = phishing-resistant, no codes to steal.
+  </div>
+</div>
+
+<!-- SAML TAB -->
+<div class="flow" id="flow-saml">
+  <div class="step-row"><div class="step-actor" style="color:#7c6dfa;border-color:#7c6dfa;">User</div><div class="step-msg">Tries to access <strong>app.company.com</strong> (Service Provider). Not logged in.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#ffd166;border-color:#ffd166;">Service Provider</div><div class="step-msg">Generates <strong>SAML AuthnRequest</strong>, redirects browser to Identity Provider (IdP) with the request encoded in URL.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#00e5a0;border-color:#00e5a0;">Identity Provider</div><div class="step-msg">Presents login page. User enters credentials + MFA. IdP <strong>authenticates the user</strong> against its directory (AD, LDAP).</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#00e5a0;border-color:#00e5a0;">Identity Provider</div><div class="step-msg">Creates a <strong>signed SAML Assertion</strong> (XML). Contains user attributes (email, groups, role). Signs with IdP private key. POSTs to SP via user's browser.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#ffd166;border-color:#ffd166;">Service Provider</div><div class="step-msg">Validates the <strong>SAML signature</strong> using IdP's public key. If valid, creates local session. Grants access. No password ever sent to SP.</div></div>
+  <div class="callout purple" style="margin-top:14px;"><strong>Exam tip:</strong> SAML is XML-based, enterprise SSO, IdP issues signed assertions. SP never sees or stores user passwords — it trusts the IdP's signed assertion. If the IdP is compromised, all connected SPs are at risk (this is why SSO accounts need the strongest MFA).</div>
+</div>
+
+<!-- KERBEROS TAB -->
+<div class="flow" id="flow-kerberos">
+  <div class="step-row"><div class="step-actor" style="color:#7c6dfa;border-color:#7c6dfa;">User</div><div class="step-msg">Enters password at Windows logon. Client derives an encryption key from the password. Sends <strong>AS-REQ</strong> to the KDC Authentication Service.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#00e5a0;border-color:#00e5a0;">KDC / AS</div><div class="step-msg">Verifies user identity. Issues <strong>TGT (Ticket Granting Ticket)</strong> encrypted with the KDC's KRBTGT key. Also issues a session key. Password NOT stored or retransmitted.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#7c6dfa;border-color:#7c6dfa;">User</div><div class="step-msg">Wants to access a file server. Sends <strong>TGS-REQ</strong> to Ticket Granting Service, presenting the TGT and requesting a service ticket.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#00e5a0;border-color:#00e5a0;">KDC / TGS</div><div class="step-msg">Decrypts TGT, validates it. Issues <strong>Service Ticket (ST)</strong> encrypted with the target service's key. User cannot read the ST — only the service can.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#ffd166;border-color:#ffd166;">File Server</div><div class="step-msg">Decrypts the Service Ticket with its own key. Verifies contents. Grants access. <strong>No password ever reaches the file server.</strong></div></div>
+  <div class="callout red" style="margin-top:14px;"><strong>Kerberoasting:</strong> Any domain user can request a service ticket for any SPN. The ticket is encrypted with the service account's password hash. Attackers extract this and crack it offline. Fix: gMSA (auto-rotating 120-char passwords, computationally infeasible to crack).</div>
+</div>
+
+<!-- OIDC TAB -->
+<div class="flow" id="flow-oidc">
+  <div class="step-row"><div class="step-actor" style="color:#7c6dfa;border-color:#7c6dfa;">User</div><div class="step-msg">Clicks <strong>"Sign in with Google"</strong> on a third-party app (Relying Party). App redirects to Google with an authorization request including requested scopes.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#00e5a0;border-color:#00e5a0;">Google (IdP)</div><div class="step-msg">Authenticates user. Shows consent screen: <strong>"App X wants to read your profile and email."</strong> User approves. Google returns an <strong>Authorization Code</strong> to the app.</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#ffd166;border-color:#ffd166;">App (RP)</div><div class="step-msg">Exchanges Authorization Code (server-to-server) for:<br>• <strong>Access Token</strong> — call Google APIs on user's behalf<br>• <strong>ID Token (JWT)</strong> — contains identity claims (sub, email, name)</div></div>
+  <div class="arrow-down">↓</div>
+  <div class="step-row"><div class="step-actor" style="color:#ffd166;border-color:#ffd166;">App (RP)</div><div class="step-msg">Validates ID Token signature and claims. Creates local session. User is <strong>authenticated</strong> without the app ever seeing their Google password.</div></div>
+  <div class="callout purple" style="margin-top:14px;"><strong>OAuth 2.0 vs OIDC:</strong> OAuth alone = authorization only (access token for API calls). OpenID Connect = OAuth + identity (adds ID token with user info). NEVER use OAuth 2.0 alone for login — use OIDC. The ID token is a JWT; verify signature, issuer, audience, and expiry.</div>
+</div>
+
+<script>
+function showFlow(id,btn){
+  document.querySelectorAll('.flow').forEach(f=>f.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`flow-${id}`).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+const factorInfo={
+  know:{title:'Something You Know (Knowledge)',text:'Weakest standalone factor — can be stolen (phishing), guessed (brute force), or observed (shoulder surfing). The only factor that can be compromised without physical access. <strong style="color:#7c6dfa">Default for most systems but should never be the only factor.</strong> Long passphrases significantly outperform complex passwords for brute force resistance.'},
+  have:{title:'Something You Have (Possession)',text:'Physical or software token. TOTP apps (Authenticator) are strong. Hardware keys (YubiKey, FIDO2) are strongest in this category — phishing-resistant because the credential is origin-bound. SMS OTP is the weakest "have" factor — vulnerable to SIM swapping, SS7 attacks, and malware. <strong style="color:#ffd166">Exam: SMS OTP = weakest commonly-used MFA.</strong>'},
+  are:{title:'Something You Are (Inherence / Biometrics)',text:'Biologically tied to a specific individual. Cannot be forgotten, lent, or easily stolen. <strong style="color:#00e5a0">Strongest for non-repudiation</strong> — hard for someone else to provide your biometric. Vulnerabilities: spoofing with high-quality replicas (FAR concern), liveness detection required. Once compromised (biometric database breach), you cannot change your fingerprint — unlike a password.'},
+};
+function showFactor(id){
+  document.querySelectorAll('.factor-card').forEach(c=>c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const info=factorInfo[id];
+  document.getElementById('factor-panel').innerHTML=`<strong style="color:var(--accent2)">${info.title}</strong><br><br>${info.text}`;
+}
+</script>
+</body>
+</html>

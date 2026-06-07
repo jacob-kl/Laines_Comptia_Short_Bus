@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEC+ SY0-701 · Module 3 · Identity, Access & Authentication</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="module-nav-strip">
+    <span class="mnav-label">Module:</span>
+    <a class="module-pill" href="../crypto_and_architecture/index.html"><span class="mpill-num">01</span> Crypto & Architecture</a>
+    <a class="module-pill" href="../threats_attacks_vuln/index.html"><span class="mpill-num">02</span> Threats & Attacks</a>
+    <a class="module-pill current" href="../identity_access/index.html"><span class="mpill-num">03</span> Identity & Access</a>
+    <a class="module-pill" href="../network_security/index.html"><span class="mpill-num">04</span> Network Security</a>
+    <a class="module-pill" href="../governance_risk_compliance/index.html"><span class="mpill-num">05</span> GRC</a>
+    <span style="margin-left:auto;color:var(--muted);font-size:10px;">SY0-701 Study Lab</span>
+  </div>
+
+  <header>
+    <div class="badge">Module 03 · CompTIA Security+ SY0-701</div>
+    <h1>Identity, Access &<br><span>Authentication</span></h1>
+    <p>// MFA · SSO · SAML · OAuth/OIDC · Kerberos · PAM · identity lifecycle</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="showTab('concepts',this)">Concepts</button>
+    <button class="tab-btn" onclick="showTab('quiz',this)">Quiz</button>
+    <button class="tab-btn" onclick="showTab('diagrams',this)">Diagrams</button>
+    <button class="tab-btn" onclick="showTab('drag-drop',this)">Match-Up Lab</button>
+    <button class="tab-btn" onclick="showTab('flashcards',this)">Flashcards</button>
+    <button class="tab-btn" onclick="showTab('reference',this)">Quick Reference</button>
+  </nav>
+
+  <div class="section active" id="concepts">
+    <div class="section-header"><h2>Identity, Access & Authentication</h2><p>// click any card to reveal · covers MFA, federation, directory services, PAM, lifecycle</p></div>
+    <div class="callout purple"><strong>Core exam pattern:</strong> IAM questions test whether you know WHICH protocol or control fits the scenario. SAML = enterprise SSO (XML assertions). OIDC = web app "sign in with X" (JWT). Kerberos = Windows/AD (tickets). FIDO2 = phishing-resistant (origin-bound). PAM = privileged account control (vaulting, JIT, recording).</div>
+    <div class="concept-grid" id="concept-grid"></div>
+  </div>
+
+  <div class="section" id="quiz">
+    <div class="section-header"><h2>Identity & Access Quiz</h2><p>// 8 random questions from a bank of 24 · new set each attempt · full per-choice explanations</p></div>
+    <div class="quiz-header">
+      <span class="quiz-counter" id="mq-counter">Question 1 of 8</span>
+      <span class="quiz-score-live" id="mq-score-live">Score: 0/0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="mq-progress" style="width:0%"></div></div>
+    <div id="mq-box"></div>
+  </div>
+
+  <div class="section" id="diagrams">
+    <div class="section-header"><h2>Interactive Diagrams</h2><p>// tap to explore authentication flows and identity lifecycle</p></div>
+    <div class="card">
+      <div class="card-title">Authentication Flows — SAML, Kerberos, OIDC, MFA Factors</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;">Switch tabs to walk through each protocol flow step by step. Tap factor cards for security analysis.</p>
+      <div class="callout purple"><strong>Exam tip:</strong> Know what each protocol step produces. SAML → signed XML assertion. Kerberos → TGT then service ticket. OIDC → access token + ID token (JWT). OAuth alone → access token only (no identity).</div>
+      <iframe class="diagram-frame" src="diagrams/authflows.html" title="Authentication flows" style="height:580px;"></iframe>
+    </div>
+    <div class="card">
+      <div class="card-title">Identity Lifecycle & PAM Controls</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px;">Tap each lifecycle phase to see controls and common failure modes.</p>
+      <div class="callout"><strong>Critical timing:</strong> Deprovisioning must be IMMEDIATE. Every phase has documented failure modes that appear on the exam as scenario-based traps.</div>
+      <iframe class="diagram-frame" src="diagrams/lifecycle.html" title="Identity lifecycle" style="height:600px;"></iframe>
+    </div>
+  </div>
+
+  <div class="section" id="drag-drop">
+    <div class="section-header"><h2>Match-Up Lab</h2><p>// drag items to their correct category</p></div>
+    <div class="card">
+      <div class="card-title">Round 1 · MFA Factor Classification</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">Sort each authentication method into its factor category. Remember: MFA requires two DIFFERENT categories.</p>
+      <div class="drag-area">
+        <div class="drag-col"><h4>Methods to Sort</h4><div class="drag-items" id="dd-source-1"></div></div>
+        <div class="drag-col"><h4>Categories</h4>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:5px;">SOMETHING YOU KNOW</div><div class="drop-zone" id="dz-sym" data-cat="know"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent4);margin-bottom:5px;">SOMETHING YOU HAVE</div><div class="drop-zone" id="dz-asym" data-cat="have"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:5px;">SOMETHING YOU ARE</div><div class="drop-zone" id="dz-hash" data-cat="are"><div class="drop-zone-label">Drop here</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="check-btn" onclick="checkDragDrop1()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop1()">Shuffle & Reset</button>
+      <div class="feedback" id="dd1-feedback"></div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">Round 2 · IAM Concept Matching</div>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px;">Match each action or feature to its IAM category.</p>
+      <div class="drag-area">
+        <div class="drag-col"><h4>Actions / Features</h4><div class="drag-items" id="dd-source-2"></div></div>
+        <div class="drag-col"><h4>IAM Category</h4>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:5px;">SSO / FEDERATION</div><div class="drop-zone" id="dz-seg" data-cat="seg"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent4);margin-bottom:5px;">KERBEROS</div><div class="drop-zone" id="dz-hard" data-cat="hard"><div class="drop-zone-label">Drop here</div></div></div>
+            <div><div style="font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:5px;">PAM</div><div class="drop-zone" id="dz-ac" data-cat="ac"><div class="drop-zone-label">Drop here</div></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="check-btn" onclick="checkDragDrop2()">Check Answers</button>
+      <button class="reset-btn" onclick="resetDragDrop2()" style="margin-left:10px;">Shuffle & Reset</button>
+      <div class="feedback" id="dd2-feedback"></div>
+    </div>
+  </div>
+
+  <div class="section" id="flashcards">
+    <div class="section-header"><h2>Flashcards</h2><p>// click to flip · filter by topic · shuffle anytime</p></div>
+    <div class="flashcard-wrap"><div class="flashcard" id="flashcard" onclick="flipCard()"><div class="card-face card-front"><div class="hint">Click to reveal answer</div><div class="q" id="fc-question"></div></div><div class="card-face card-back"><div class="a" id="fc-answer"></div></div></div></div>
+    <div class="card-nav"><button onclick="prevCard()">&#8592;</button><div class="card-progress" id="fc-progress">1 / 16</div><button onclick="nextCard()">&#8594;</button></div>
+    <div style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      Filter: <button class="fc-filter-btn active" id="filter-all" onclick="filterCards('all')">All</button>
+      <button class="fc-filter-btn" id="filter-mfa" onclick="filterCards('mfa')">MFA</button>
+      <button class="fc-filter-btn" id="filter-federation" onclick="filterCards('federation')">Federation</button>
+      <button class="fc-filter-btn" id="filter-protocols" onclick="filterCards('protocols')">Protocols</button>
+      <button class="fc-filter-btn" id="filter-pam" onclick="filterCards('pam')">PAM</button>
+      <button class="fc-filter-btn" id="filter-lifecycle" onclick="filterCards('lifecycle')">Lifecycle</button>
+      <button class="fc-filter-btn" id="filter-biometrics" onclick="filterCards('biometrics')">Biometrics</button>
+      <button class="fc-filter-btn" id="filter-concepts" onclick="filterCards('concepts')">Concepts</button>
+      <span style="margin-left:8px;">|</span>
+      <button class="fc-filter-btn" onclick="shuffleCards()">🔀 Shuffle</button>
+    </div>
+  </div>
+
+  <div class="section" id="reference">
+    <div class="section-header"><h2>Quick Reference</h2></div>
+    <div class="card"><div class="card-title">MFA Factor Types</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:18%"><col style="width:30%"><col style="width:30%"><col style="width:22%"></colgroup>
+        <tr><th>Factor Type</th><th>Examples</th><th>Strengths</th><th>Weaknesses</th></tr>
+        <tr><td>Know</td><td>Password, PIN, security question</td><td>Easy to implement</td><td>Phishable, guessable, shareable</td></tr>
+        <tr><td>Have</td><td>TOTP app, hardware key (YubiKey), smart card, SMS OTP</td><td>Physical presence required</td><td>Can be lost; SMS = SIM swap risk</td></tr>
+        <tr><td>Are</td><td>Fingerprint, face, iris, voice</td><td>Always with you, non-repudiation</td><td>Can't change if compromised, FAR/FRR tradeoff</td></tr>
+        <tr><td>FIDO2/Passkey</td><td>WebAuthn hardware key or device authenticator</td><td>Phishing-resistant (origin-bound), no codes to steal</td><td>Requires supporting browser/device</td></tr>
+      </table>
+    </div>
+    <div class="card"><div class="card-title">Federation Protocols Compared</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:15%"><col style="width:14%"><col style="width:15%"><col style="width:28%"><col style="width:28%"></colgroup>
+        <tr><th>Protocol</th><th>Format</th><th>Purpose</th><th>Token Type</th><th>Common Use</th></tr>
+        <tr><td>SAML 2.0</td><td>XML</td><td>Authentication + SSO</td><td>SAML Assertion (XML, signed)</td><td>Enterprise SSO (Okta, ADFS, Azure AD)</td></tr>
+        <tr><td>OAuth 2.0</td><td>JSON/REST</td><td>Authorization only</td><td>Access Token (opaque or JWT)</td><td>API delegation ("allow app to read calendar")</td></tr>
+        <tr><td>OpenID Connect</td><td>JSON/REST</td><td>Authentication</td><td>ID Token (JWT) + Access Token</td><td>"Sign in with Google/Apple/GitHub"</td></tr>
+        <tr><td>Kerberos</td><td>Binary tickets</td><td>Authentication in AD</td><td>TGT + Service Tickets</td><td>Windows domain logon, internal services</td></tr>
+      </table>
+    </div>
+    <div class="card"><div class="card-title">Scenario Decision Guide — IAM</div>
+      <table style="table-layout:auto;"><colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+        <tr><th>Scenario says...</th><th>Answer</th></tr>
+        <tr><td>Enterprise SSO between on-prem AD and SaaS apps</td><td>SAML 2.0 (AD FS as IdP)</td></tr>
+        <tr><td>"Sign in with Google" on a web app</td><td>OpenID Connect (OIDC)</td></tr>
+        <tr><td>App gets permission to access Google Drive files</td><td>OAuth 2.0 (authorization, NOT authentication)</td></tr>
+        <tr><td>Windows domain ticket-based authentication</td><td>Kerberos (TGT → service ticket)</td></tr>
+        <tr><td>Attacker cracks service account offline from ticket</td><td>Kerberoasting → fix with gMSA</td></tr>
+        <tr><td>Phishing-resistant MFA, no codes to intercept</td><td>FIDO2 / hardware key / passkey</td></tr>
+        <tr><td>Accumulated permissions over time, role changed</td><td>Privilege creep → access recertification</td></tr>
+        <tr><td>Temporary admin accounts, auto-deleted after task</td><td>JIT (Just-in-Time) access via PAM</td></tr>
+        <tr><td>Service account password auto-rotated, nobody knows it</td><td>PAM password vaulting</td></tr>
+        <tr><td>SMS MFA intercepted via carrier social engineering</td><td>SIM swap → upgrade to FIDO2</td></tr>
+        <tr><td>MFA push spam, user accidentally approves</td><td>MFA fatigue/push bombing → number matching</td></tr>
+        <tr><td>Impostor biometrically accepted</td><td>High FAR (False Acceptance Rate)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>Module 03 of SEC+ SY0-701 · <a href="../network_security/index.html" style="color:var(--accent2);text-decoration:none;">→ Next: Network Security</a></footer>
+</div>
+<script src="js/identity.js"></script>
+<script src="js/quiz.js"></script>
+<script src="js/flashcards.js"></script>
+<script src="js/dragdrop.js"></script>
+<script>
+function showTab(id,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id).classList.add('active');if(btn)btn.classList.add('active');}
+function buildGrid(data,cid){const c=document.getElementById(cid);data.forEach(item=>{const d=document.createElement('div');d.className='concept-card';d.innerHTML=`<div class="label">${item.label}</div><div class="term">${item.term}</div><div class="def">${item.def}</div><div class="tags">${(item.tags||[]).map(t=>`<span class="tag ${t}">${{conf:'Confidentiality',integ:'Integrity',auth:'Authentication',nonrep:'Non-repudiation',avail:'Availability'}[t]||t}</span>`).join('')}</div>`;d.onclick=()=>d.classList.toggle('open');c.appendChild(d);});}
+buildGrid(window.moduleConcepts,'concept-grid');
+initQuiz('mod');
+buildDragDrop1(); buildDragDrop2();
+renderFC();
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireless Security Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent4);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:16px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-top:3px solid;padding:14px;cursor:pointer;transition:all .2s;}
+  .card:hover,.card.active{background:var(--surface2);}
+  .card-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .card-sub{font-size:9px;color:var(--muted);margin-bottom:10px;}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:9px;color:var(--muted);}
+  .bar{flex:1;height:5px;background:var(--border);border-radius:3px;}
+  .bar-fill{height:100%;border-radius:3px;}
+  .info-panel{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent4);padding:14px 16px;font-size:11px;line-height:1.7;min-height:52px;margin-bottom:14px;}
+  .info-panel .hint{color:var(--muted);font-size:10px;font-style:italic;}
+  .attack-section h3{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--accent3);margin-bottom:10px;}
+  .attack-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent3);padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .2s;}
+  .attack-card:hover{background:var(--surface2);}
+  .attack-name{font-size:11px;font-weight:700;color:var(--accent3);margin-bottom:4px;}
+  .attack-sub{font-size:10px;color:var(--muted);}
+</style>
+</head>
+<body>
+<h2>Wireless Security — Standards & Attacks</h2>
+<p class="sub">// tap any card for details · top section = standards · bottom = attacks</p>
+
+<div class="grid" id="grid"></div>
+<div class="info-panel" id="info-panel"><div class="hint">Tap a wireless standard above →</div></div>
+
+<div class="attack-section">
+  <h3>Wireless Attacks</h3>
+  <div id="attacks"></div>
+</div>
+<div class="info-panel" id="attack-panel"><div class="hint">Tap an attack type above →</div></div>
+
+<script>
+const standards=[
+  {name:'WEP',color:'#ff6b6b',sub:'Broken · Never use',sec:5,priv:5,acc:0,
+   detail:'WEP (Wired Equivalent Privacy) is cryptographically broken. Uses static RC4 keys with weak IVs (Initialization Vectors). Can be cracked in minutes with freely available tools. No modern use case — if you see WEP on the exam as an option, it\'s wrong.'},
+  {name:'WPA-TKIP',color:'#ff6b6b',sub:'Deprecated · Legacy only',sec:20,priv:20,acc:0,
+   detail:'WPA with TKIP was a temporary fix for WEP hardware. TKIP wraps RC4 with better key mixing. Still has known weaknesses. Deprecated in 2012 by IEEE. If forced to use legacy hardware, still far better than WEP, but never for new deployments.'},
+  {name:'WPA2-Personal',color:'#ffd166',sub:'PSK · Consumer grade',sec:55,priv:55,acc:1,
+   detail:'WPA2 with Pre-Shared Key (PSK). AES-CCMP encryption — strong. The weakness: one shared password for everyone. The 4-way handshake can be captured and subjected to offline dictionary attacks. No individual user accountability. Appropriate for home, not for organizations.'},
+  {name:'WPA2-Enterprise',color:'#00e5a0',sub:'802.1X · Corporate standard',sec:80,priv:80,acc:2,
+   detail:'WPA2 with 802.1X/RADIUS authentication. Each user authenticates with individual credentials (username/password, certificate, or MFA via EAP). No shared PSK. Per-user revocation. Full audit trail. The correct answer for any organization needing wireless access control and accountability.'},
+  {name:'WPA3-Personal',color:'#00e5a0',sub:'SAE · Consumer improved',sec:75,priv:75,acc:1,
+   detail:'WPA3-Personal uses SAE (Simultaneous Authentication of Equals, DRAGONFLY). Improvements over WPA2-Personal: (1) Offline dictionary attack resistance — the handshake can\'t be cracked offline. (2) Forward secrecy — each session gets unique keys. Better than WPA2-Personal but still no individual accountability.'},
+  {name:'WPA3-Enterprise',color:'#00e5a0',sub:'192-bit · Highest security',sec:95,priv:95,acc:2,
+   detail:'WPA3-Enterprise with 192-bit security mode. Uses Suite B cryptography (ECDSA-384, AES-256-GCM, SHA-384). Designed for government, military, and financial sector. All advantages of WPA2-Enterprise plus WPA3 handshake improvements and stronger cipher suite requirements.'},
+];
+
+const attacks=[
+  {name:'Evil Twin / Rogue Hotspot',
+   detail:'Attacker creates an AP with the same SSID as a legitimate network. Clients auto-connect. Attacker gets MITM position. <strong>Detection:</strong> Wireless IDS monitoring for duplicate SSIDs. <strong>Mitigation:</strong> 802.1X (clients must verify AP certificate), user training, VPN on public Wi-Fi.'},
+  {name:'Deauthentication (Deauth) Attack',
+   detail:'Sends spoofed 802.11 deauthentication management frames to forcibly disconnect clients. In WPA2, management frames are unauthenticated — anyone can send them. Used as a precursor to evil twin attacks (force disconnect → reconnect to fake AP). <strong>WPA3</strong> adds Management Frame Protection (MFP) as mandatory — fixes this.'},
+  {name:'WPA2 Offline Dictionary Attack',
+   detail:'Capture the WPA2-PSK 4-way handshake (triggered by a deauth attack forcing reconnection). Take the captured handshake offline. Run a word list / dictionary attack. If the pre-shared key is a common word/phrase, it\'s cracked. <strong>Fix:</strong> Use long random PSK (20+ chars) or switch to WPA2/WPA3-Enterprise.'},
+  {name:'Rogue AP on Corporate Network',
+   detail:'An unauthorized access point physically connected to the corporate network (plugged into a wall jack). Bypasses all wireless security if it broadcasts open or WEP. Provides attacker entry point. <strong>Mitigation:</strong> 802.1X on switch ports (NAC), wireless IDS monitoring for unauthorized SSIDs, physical security of network ports.'},
+  {name:'KARMA / SSID Probe Attack',
+   detail:'Devices broadcast probe requests for saved networks ("Is <saved network> here?"). KARMA attacks respond YES to all probes, allowing connection. Client connects to attacker instead of saved network. <strong>Mitigation:</strong> 802.1X with server certificate validation (client verifies the AP presents a trusted cert), disable auto-connect on mobile devices.'},
+];
+
+const grid=document.getElementById('grid');
+standards.forEach(s=>{
+  const c=document.createElement('div'); c.className='card'; c.style.borderTopColor=s.color;
+  c.innerHTML=`<div class="card-name" style="color:${s.color}">${s.name}</div><div class="card-sub">${s.sub}</div>
+    <div class="bar-row"><span>Security</span><div class="bar"><div class="bar-fill" style="width:${s.sec}%;background:${s.color}"></div></div></div>
+    <div class="bar-row"><span>Privacy</span><div class="bar"><div class="bar-fill" style="width:${s.priv}%;background:${s.color}"></div></div></div>
+    <div class="bar-row"><span>Accountability</span><div class="bar"><div class="bar-fill" style="width:${s.acc*50}%;background:${s.color}"></div></div></div>`;
+  c.onclick=()=>{document.querySelectorAll('.card').forEach(x=>x.classList.remove('active'));c.classList.add('active');const p=document.getElementById('info-panel');p.innerHTML=`<strong style="color:${s.color}">${s.name}</strong><br><br>${s.detail}`;p.style.borderLeftColor=s.color;p.scrollIntoView({behavior:'smooth',block:'nearest'});};
+  grid.appendChild(c);
+});
+
+const atkcont=document.getElementById('attacks');
+attacks.forEach(a=>{
+  const d=document.createElement('div'); d.className='attack-card';
+  d.innerHTML=`<div class="attack-name">${a.name}</div><div class="attack-sub">Tap for details →</div>`;
+  d.onclick=()=>{document.querySelectorAll('.attack-card').forEach(x=>x.style.background='');d.style.background='var(--surface2)';const p=document.getElementById('attack-panel');p.innerHTML=`<strong style="color:var(--accent3)">${a.name}</strong><br><br>${a.detail}`;p.scrollIntoView({behavior:'smooth',block:'nearest'});};
+  atkcont.appendChild(d);
+});
+</script>
+</body>
+</html>

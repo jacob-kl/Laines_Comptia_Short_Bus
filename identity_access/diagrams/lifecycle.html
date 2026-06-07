@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identity Lifecycle</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent2);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;}
+  .cycle{display:flex;flex-direction:column;gap:4px;}
+  .phase{display:flex;align-items:stretch;cursor:pointer;}
+  .phase-icon{width:44px;min-width:44px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .phase-body{flex:1;padding:12px 14px;border:1px solid var(--border);background:var(--surface);transition:all .2s;}
+  .phase:hover .phase-body,.phase.active .phase-body{background:var(--surface2);}
+  .phase-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+  .phase-sub{font-size:10px;color:var(--muted);}
+  .phase-detail{font-size:11px;line-height:1.7;color:var(--muted);max-height:0;overflow:hidden;transition:max-height .4s ease,padding .3s;}
+  .phase.active .phase-detail{max-height:300px;padding-top:10px;}
+  .phase-detail strong{color:var(--text);}
+  .phase-detail .warn{color:var(--accent3);}
+  .connector{padding:0 0 0 22px;color:var(--border);font-size:12px;}
+  .info-panel{margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent2);padding:14px 16px;font-size:11px;line-height:1.7;min-height:48px;}
+  .info-panel .hint{color:var(--muted);font-size:10px;font-style:italic;}
+</style>
+</head>
+<body>
+<h2>Identity Lifecycle & PAM Controls</h2>
+<p class="sub">// tap each phase to see controls and common failures</p>
+
+<div class="cycle" id="cycle"></div>
+<div class="info-panel" id="info-panel"><div class="hint">Tap any phase above →</div></div>
+
+<script>
+const phases=[
+  { icon:'👤', color:'#00e5a0', title:'Provisioning', sub:'New hire or role change — account creation and access assignment',
+    detail:`<strong>Controls:</strong> HR-triggered automated provisioning, role-based templates (Finance role → Finance system access), manager approval workflows, principle of least privilege from day one.<br><br><span class="warn">Common failures:</span> Manually created accounts with excessive permissions, forgotten systems not in the provisioning workflow, no manager sign-off on access requests.`,
+    panel:'Provisioning is where access rights begin. Best practice: tie provisioning to HR systems so accounts are created automatically when someone joins, with access matching their role template. Any access beyond the template should require documented approval. The worst provisioning failure is giving everyone admin access "to start" and never reducing it.' },
+  { icon:'🔐', color:'#7c6dfa', title:'Authentication', sub:'Daily access — MFA, SSO, conditional access',
+    detail:`<strong>Controls:</strong> MFA enforcement, SSO (single point of strong auth), FIDO2 for phishing resistance, conditional access policies (block from unmanaged devices).<br><br><span class="warn">Common failures:</span> Legacy apps exempt from MFA, shared accounts bypassing individual MFA, weak factors accepted (SMS OTP only).`,
+    panel:'Authentication is the daily security gate. Every account should have MFA enforced — no exceptions. Legacy systems that can\'t support MFA should be fronted by an SSO proxy. SMS OTP is the floor, not the ceiling. Push to hardware keys or passkeys for high-privilege accounts.' },
+  { icon:'🔑', color:'#ffd166', title:'Authorization', sub:'Access decisions — RBAC, ABAC, least privilege',
+    detail:`<strong>Controls:</strong> RBAC with well-defined roles, just-in-time privilege elevation for admin tasks, regular access reviews, automated deprovisioning when role changes.<br><br><span class="warn">Common failures:</span> Privilege creep (accumulating permissions over time), no role-change triggered deprovisioning, "IT has access to everything" anti-pattern.`,
+    panel:'Authorization governs what an authenticated identity can actually do. RBAC assigns permissions to roles, not individuals — when roles change, access changes automatically. The privilege creep problem: every time someone gets a new role/project, they gain access but rarely lose old access. Quarterly recertification catches this.' },
+  { icon:'👁', color:'#00e5a0', title:'Monitoring & Recertification', sub:'Ongoing — UEBA, audit logs, access reviews',
+    detail:`<strong>Controls:</strong> UEBA for behavioral anomaly detection, SIEM log correlation, quarterly manager access reviews (recertification), privileged session recording via PAM.<br><br><span class="warn">Common failures:</span> Logs collected but never reviewed, recertification treated as rubber-stamp exercise, no behavioral baselines established.`,
+    panel:'Monitoring is continuous verification that access is being used appropriately. UEBA establishes behavioral baselines and fires alerts when someone deviates (unusual hours, location, data volume). Access recertification is the governance control — managers must actively confirm their team\'s access is still needed. Privileged session recording via PAM is the audit trail for admin actions.' },
+  { icon:'⚡', color:'#ff6b6b', title:'Deprovisioning', sub:'Termination or role change — CRITICAL timing',
+    detail:`<strong>Controls:</strong> Immediate AD account disable at termination, checklist-based revocation of ALL credentials (VPN cert, API keys, SaaS apps, contractor portals), hardware recovery, email redirect then disable.<br><br><span class="warn">Common failures:</span> Only disabling AD, forgetting non-SSO systems, forgetting API keys and certs, departing employee retains access to shared credentials.`,
+    panel:'Deprovisioning is the most time-critical phase — it must happen immediately at termination. The most common failure: only disabling the Active Directory account while leaving VPN certificates, cloud API keys, SaaS admin access, and contractor portal accounts active. A comprehensive offboarding checklist covering every system the person had access to is essential. Non-SSO apps require individual revocation.' },
+  { icon:'🔄', color:'#7c6dfa', title:'PAM — Privileged Lifecycle', sub:'Admin accounts — JIT, vaulting, session recording',
+    detail:`<strong>Password Vaulting:</strong> Service account credentials stored encrypted, auto-rotated — humans never know the password.<br><strong>JIT Access:</strong> Temporary admin accounts created on-demand, auto-deleted after task.<br><strong>Session Recording:</strong> Full video/keystroke audit of privileged sessions.<br><br><span class="warn">Why it matters:</span> Standing admin accounts are the most valuable attacker target — JIT eliminates them.`,
+    panel:'Privileged accounts (domain admins, root, service accounts) are the ultimate prize for attackers. PAM addresses this with three core controls: (1) Password vaulting — rotate service account passwords automatically, no human knows them. (2) JIT access — temporary admin elevation instead of standing accounts, automatic cleanup. (3) Session recording — full audit trail of everything done during privileged sessions, stored immutably.' },
+];
+
+const cycle=document.getElementById('cycle');
+phases.forEach((p,i)=>{
+  const div=document.createElement('div'); div.className='phase';
+  div.innerHTML=`<div class="phase-icon" style="background:${p.color}18;color:${p.color};">${p.icon}</div><div class="phase-body"><div class="phase-title" style="color:${p.color};">${p.title}</div><div class="phase-sub">${p.sub}</div><div class="phase-detail">${p.detail}</div></div>`;
+  div.onclick=()=>{
+    const was=div.classList.contains('active');
+    document.querySelectorAll('.phase').forEach(el=>el.classList.remove('active'));
+    if(!was){ div.classList.add('active'); const pan=document.getElementById('info-panel'); pan.innerHTML=`<strong style="color:${p.color}">${p.title}</strong><br><br>${p.panel}`; pan.style.borderLeftColor=p.color; pan.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  };
+  cycle.appendChild(div);
+  if(i<phases.length-1){ const c=document.createElement('div'); c.className='connector'; c.textContent='↓'; cycle.appendChild(c); }
+});
+</script>
+</body>
+</html>

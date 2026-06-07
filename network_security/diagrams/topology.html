@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Security Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a38;--accent:#00e5a0;--accent2:#7c6dfa;--accent3:#ff6b6b;--accent4:#ffd166;--text:#e8eaf0;--muted:#6b7280;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;padding:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;color:var(--accent);margin-bottom:4px;}
+  .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;}
+  svg{width:100%;height:auto;display:block;cursor:pointer;}
+  .node{cursor:pointer;} .node rect,.node circle{transition:all .2s;} .node:hover rect,.node:hover circle{filter:brightness(1.3);}
+  .info-panel{margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);padding:14px 16px;font-size:11px;line-height:1.7;min-height:52px;}
+  .info-panel .ip-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:6px;}
+  .info-panel .hint{color:var(--muted);font-size:10px;font-style:italic;}
+</style>
+</head>
+<body>
+<h2>Network Security Architecture — DMZ + Defense in Depth</h2>
+<p class="sub">// tap any component to learn its security role</p>
+
+<svg viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg" id="svg">
+  <defs>
+    <marker id="a" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#6b7280"/></marker>
+    <marker id="ar" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#ff6b6b"/></marker>
+    <marker id="ag" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#00e5a0"/></marker>
+  </defs>
+
+  <!-- Zone labels -->
+  <text x="20" y="18" font-family="Space Mono" font-size="8" fill="#6b7280" letter-spacing="2">INTERNET</text>
+  <text x="200" y="18" font-family="Space Mono" font-size="8" fill="#ffd166" letter-spacing="2">PERIMETER</text>
+  <text x="340" y="18" font-family="Space Mono" font-size="8" fill="#ff6b6b" letter-spacing="2">DMZ</text>
+  <text x="510" y="18" font-family="Space Mono" font-size="8" fill="#00e5a0" letter-spacing="2">INTERNAL NETWORK</text>
+
+  <!-- Zone backgrounds -->
+  <rect x="160" y="22" width="140" height="410" fill="rgba(255,209,102,.03)" stroke="#ffd166" stroke-width="1" stroke-dasharray="4,3"/>
+  <rect x="300" y="22" width="180" height="410" fill="rgba(255,107,107,.03)" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4,3"/>
+  <rect x="480" y="22" width="275" height="410" fill="rgba(0,229,160,.03)" stroke="#00e5a0" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- INTERNET -->
+  <g class="node" onclick="showInfo('internet')" data-tip="">
+    <circle cx="80" cy="220" r="36" fill="#12151c" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="80" y="214" text-anchor="middle" font-size="20">🌐</text>
+    <text x="80" y="232" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#6b7280">INTERNET</text>
+    <text x="80" y="242" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Untrusted</text>
+  </g>
+
+  <!-- Arrow: internet → ext firewall -->
+  <line x1="116" y1="220" x2="164" y2="220" stroke="#6b7280" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- EXTERNAL FIREWALL -->
+  <g class="node" onclick="showInfo('extfw')">
+    <rect x="168" y="188" width="120" height="64" rx="3" fill="#12151c" stroke="#ffd166" stroke-width="1.5"/>
+    <text x="228" y="210" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd166">EXTERNAL</text>
+    <text x="228" y="222" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ffd166">FIREWALL</text>
+    <text x="228" y="237" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">NGFW / IPS</text>
+    <text x="228" y="247" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">stateful + DPI</text>
+  </g>
+
+  <!-- Arrow: ext fw → DMZ web server -->
+  <line x1="288" y1="210" x2="308" y2="170" stroke="#ffd166" stroke-width="1.5" marker-end="url(#a)"/>
+  <!-- Arrow: ext fw → DMZ mail -->
+  <line x1="288" y1="230" x2="308" y2="270" stroke="#ffd166" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- DMZ: Web Server -->
+  <g class="node" onclick="showInfo('webserver')">
+    <rect x="310" y="130" width="135" height="64" rx="3" fill="#12151c" stroke="#ff6b6b" stroke-width="1"/>
+    <text x="377" y="152" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ff6b6b">WEB SERVER</text>
+    <text x="377" y="166" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Public-facing · HTTPS</text>
+    <text x="377" y="178" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Reverse proxy / WAF</text>
+    <text x="377" y="186" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">Compromised → still no DB</text>
+  </g>
+
+  <!-- DMZ: Mail Relay -->
+  <g class="node" onclick="showInfo('mail')">
+    <rect x="310" y="250" width="135" height="54" rx="3" fill="#12151c" stroke="#ff6b6b" stroke-width="1"/>
+    <text x="377" y="270" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ff6b6b">MAIL RELAY</text>
+    <text x="377" y="284" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">SMTP gateway</text>
+    <text x="377" y="296" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Anti-spam / AV scan</text>
+  </g>
+
+  <!-- DMZ: DNS Server -->
+  <g class="node" onclick="showInfo('dns')">
+    <rect x="310" y="60" width="135" height="44" rx="3" fill="#12151c" stroke="#ff6b6b" stroke-width="1"/>
+    <text x="377" y="78" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#ff6b6b">PUBLIC DNS</text>
+    <text x="377" y="92" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Authoritative · DNSSEC</text>
+    <text x="377" y="100" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">Port 53 only</text>
+  </g>
+  <line x1="288" y1="200" x2="308" y2="82" stroke="#ffd166" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#a)"/>
+
+  <!-- INTERNAL FIREWALL -->
+  <g class="node" onclick="showInfo('intfw')">
+    <rect x="488" y="188" width="120" height="64" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1.5"/>
+    <text x="548" y="210" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">INTERNAL</text>
+    <text x="548" y="222" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">FIREWALL</text>
+    <text x="548" y="237" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Blocks DMZ→internal</text>
+    <text x="548" y="247" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">except allowed ports</text>
+  </g>
+
+  <!-- Arrows: web/mail → int fw -->
+  <line x1="445" y1="162" x2="486" y2="210" stroke="#6b7280" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="445" y1="277" x2="486" y2="230" stroke="#6b7280" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- Internal resources -->
+  <g class="node" onclick="showInfo('appserver')">
+    <rect x="618" y="100" width="130" height="54" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="683" y="122" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">APP SERVER</text>
+    <text x="683" y="136" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Internal-only access</text>
+    <text x="683" y="148" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">Web server proxies to this</text>
+  </g>
+  <g class="node" onclick="showInfo('db')">
+    <rect x="618" y="180" width="130" height="54" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="683" y="202" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">DATABASE</text>
+    <text x="683" y="216" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Never internet-facing</text>
+    <text x="683" y="228" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">Port 3306/1433 internal only</text>
+  </g>
+  <g class="node" onclick="showInfo('endpoints')">
+    <rect x="618" y="260" width="130" height="54" rx="3" fill="#12151c" stroke="#00e5a0" stroke-width="1"/>
+    <text x="683" y="282" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#00e5a0">ENDPOINTS</text>
+    <text x="683" y="296" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">NAC-controlled</text>
+    <text x="683" y="308" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">EDR + patch + encryption</text>
+  </g>
+  <g class="node" onclick="showInfo('siem')">
+    <rect x="618" y="340" width="130" height="54" rx="3" fill="#12151c" stroke="#7c6dfa" stroke-width="1"/>
+    <text x="683" y="362" text-anchor="middle" font-family="Space Mono" font-size="8" fill="#7c6dfa">SIEM / SOC</text>
+    <text x="683" y="376" text-anchor="middle" font-family="Space Mono" font-size="7" fill="#6b7280">Log aggregation</text>
+    <text x="683" y="388" text-anchor="middle" font-family="Space Mono" font-size="6" fill="#6b7280">All zones feed logs here</text>
+  </g>
+
+  <!-- Internal fw → resources -->
+  <line x1="608" y1="210" x2="617" y2="127" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+  <line x1="608" y1="220" x2="617" y2="207" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+  <line x1="608" y1="235" x2="617" y2="287" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+
+  <!-- SIEM log lines (dashed) -->
+  <line x1="683" y1="340" x2="548" y2="252" stroke="#7c6dfa" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#a)"/>
+  <line x1="683" y1="340" x2="228" y2="252" stroke="#7c6dfa" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#a)"/>
+
+  <!-- Attacker attempt (red dashed from DMZ to internal) -->
+  <line x1="445" y1="160" x2="484" y2="188" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ar)"/>
+  <text x="460" y="170" font-family="Space Mono" font-size="7" fill="#ff6b6b">blocked</text>
+</svg>
+
+<div class="info-panel" id="info-panel"><div class="hint">Tap any component above →</div></div>
+
+<script>
+const INFO={
+  internet:{title:'Internet (Untrusted Zone)',color:'#6b7280',text:'All traffic from the internet is untrusted by default. The external firewall is the first line of defense — it should only allow traffic on ports that have a corresponding public service (HTTP/HTTPS, SMTP, DNS). Everything else is dropped.'},
+  extfw:{title:'External Firewall (NGFW)',color:'#ffd166',text:'First security boundary. Next-Gen Firewall with DPI, IPS, and application awareness. Only allows traffic to DMZ services on specific ports (80, 443, 25, 53). Performs initial packet inspection and threat blocking. Logs all traffic to SIEM.'},
+  webserver:{title:'Web Server in DMZ',color:'#ff6b6b',text:'Public-facing HTTP/HTTPS server in the DMZ. Often fronted by a WAF (Web Application Firewall) and reverse proxy. The critical point: if this server is compromised, the attacker still faces the INTERNAL FIREWALL before reaching the database or app servers. The DMZ provides this isolation.'},
+  mail:{title:'Mail Relay in DMZ',color:'#ff6b6b',text:'Handles inbound/outbound SMTP (port 25). Performs anti-spam filtering and antivirus scanning before passing email to internal mail servers. External SMTP never talks directly to internal mail servers — the relay acts as intermediary in the DMZ.'},
+  dns:{title:'Public DNS Server in DMZ',color:'#ff6b6b',text:'Authoritative DNS for public-facing domains. Answers queries from the internet. Should be separated from internal DNS (which resolves internal hostnames). DNSSEC should sign all public zones. Only port 53 (UDP/TCP) should be allowed.'},
+  intfw:{title:'Internal Firewall',color:'#00e5a0',text:'The second security boundary — the most important one. Blocks unauthorized traffic from the DMZ to the internal network. Even if the web server is fully compromised, the internal firewall should prevent the attacker from reaching databases and internal systems. Only allows specific needed connections (e.g., web server → app server on port 8080).'},
+  appserver:{title:'Application Server (Internal)',color:'#00e5a0',text:'Runs application logic. Never directly internet-facing. The web server in the DMZ proxies requests to this server. If the web server is compromised but the internal firewall is properly configured, the attacker can\'t reach this directly — they\'d need to exploit the web-server-to-app-server allowed path.'},
+  db:{title:'Database Server (Internal)',color:'#00e5a0',text:'The most sensitive asset — never internet-facing. Database ports (3306 MySQL, 1433 SQL Server, 5432 PostgreSQL) should be blocked at all firewalls except the specific application server that needs to query it. Even internal hosts that don\'t need database access should be blocked.'},
+  endpoints:{title:'Endpoints (Internal)',color:'#00e5a0',text:'User workstations and devices on the internal network. Should be NAC-controlled (posture check before network access), running EDR, fully patched, disk-encrypted. Internal network segmentation (micro-segmentation) prevents endpoints from directly accessing servers they don\'t need.'},
+  siem:{title:'SIEM (Security Information & Event Management)',color:'#7c6dfa',text:'Centralized log collection from all zones — external firewall, DMZ servers, internal firewall, endpoints. Correlates events across systems to detect attacks that span multiple components. Generates alerts on anomalies. Powers the SOC (Security Operations Center). Also used for compliance evidence collection.'},
+};
+function showInfo(id){const info=INFO[id];if(!info)return;const p=document.getElementById('info-panel');p.innerHTML=`<div class="ip-title" style="color:${info.color}">${info.title}</div>${info.text}`;p.style.borderLeftColor=info.color;p.scrollIntoView({behavior:'smooth',block:'nearest'});}
+</script>
+</body>
+</html>
